@@ -176,10 +176,14 @@ jobs:
         id: build-artifacts-action
         env:
           SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
-          SLSA_TOOL_INPUTS: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.inputs }}
+          #SLSA_TOOL_INPUTS: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.inputs }}
+          SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
         run: |
           
+          echo "SLSA_OUTPUTS_ARTIFACTS_FILE: $SLSA_OUTPUTS_ARTIFACTS_FILE"
+          echo "SLSA_SECRETS: $SLSA_SECRETS"
+          echo "SLSA_TOOL_INPUTS: $SLSA_TOOL_INPUTS"
           cat <<EOF >DATA
           {
             "version": 1,
