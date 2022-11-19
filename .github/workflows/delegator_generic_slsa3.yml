@@ -116,7 +116,7 @@ jobs:
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
-    if: fromJson(needs.validate-token.outputs.slsa-token).delegator.runner-label == 'ubuntu-latest'
+    if: fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label == 'ubuntu-latest'
     outputs:
       build-artifacts-outputs: ${{ steps.build-artifacts-action.outputs.outputs }}
     runs-on: ubuntu-latest
@@ -128,6 +128,12 @@ jobs:
       contents: write # For release assets.
       packages: write # For publishing to GitHub packages.
     steps:
+      # - name: debug
+      #   env:
+      #     TOKEN: toJson(needs.validate-token.outputs.slsa-token)
+      #     TOKEN: toJson(needs.validate-token.outputs.slsa-token)
+      #   run: |
+      #     echo "$TOKEN: $TOKEN"
       - name: Checkout the builder
         # TODO: use a secure builder checkout.
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
