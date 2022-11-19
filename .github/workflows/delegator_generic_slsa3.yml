@@ -101,7 +101,7 @@ jobs:
               },
               "reusable-workflow":{
                 "path": "./github/workflows/builder_slsa3.yml",
-                "repository": "laurentsimon/delegated-tool",
+                "repository": "laurentsimon/slsa-delegated-tool",
                 "ref": "main",
               },
               "inputs":{
