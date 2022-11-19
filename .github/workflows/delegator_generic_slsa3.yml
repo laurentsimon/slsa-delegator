@@ -175,7 +175,7 @@ jobs:
       - name: Build artifacts
         id: build-artifacts-action
         env:
-          SLSA_OUTPUTS_ARTIFACTS_FILE: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR/$SLSA_ARTIFACTS_FILE
+          SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
           SLSA_TOOL_INPUTS: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.inputs }}
           SLSA_SECRETS: ${{ secrets.secrets }}
         run: |
