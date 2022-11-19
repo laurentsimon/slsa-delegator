@@ -43,12 +43,9 @@ on:
     outputs:
       build-artifacts-outputs:
         description: "The outputs from the build-artitacts Action, unchanged."
-        value: ${{ jobs.build-artifacts.outputs.outputs }}
-      attestations-metadata:
-        description: >
-          Metadata about the attestations that were generated. The metadata includes:
-          - the name of the (single) artifact containing all the attestations, downloadable via 'actions/download-artifacts' ,
-          - the list of each attestation names. (NOTE: can augment the stucture with subjects, etc.)
+        value: ${{ jobs.build-artifacts.outputs.build-artifacts-outputs }}
+      attestations-download-name:
+        description: "Name of the artifact to download all the attestations."
         value: ${{ jobs.generate-provenance.outputs.metadata }}
 
 jobs:
@@ -84,8 +81,13 @@ jobs:
     steps:
       - name: validate the token
         id: validate
+        env:
+          SLSA_TOKEN: ${{ inputs.slsa-token }}
         run: |
           # TODO: verify using JSON works and does not lead to parsing problems.
+          echo "token=$SLSA_TOKEN"
+          echo
+
           cat <<EOF >DATA
           {
             "version": 1,
@@ -130,22 +132,22 @@ jobs:
       - name: Checkout the builder
         # TODO: use a secure builder checkout.
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
-          with:
-            fetch-depth: 1
-            persist-credentials: false
-            repository: "laurentsimon/slsa-delegator"
-            ref: "main"
-            path: __BUILDER_CHECKOUT_DIR__
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          repository: "laurentsimon/slsa-delegator"
+          ref: "main"
+          path: __BUILDER_CHECKOUT_DIR__
 
       - name: Checkout the tool
         # TODO: use a secure tool checkout.
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
-          with:
-            fetch-depth: 1
-            persist-credentials: false
-            repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
-            ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
-            path: __TOOL_CHECKOUT_DIR__
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
+          ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
+          path: __TOOL_CHECKOUT_DIR__
 
       # TODO: This should be part of the tool checkout Action.
       - name: Link the Action / create output folder
@@ -160,16 +162,17 @@ jobs:
       # TODO: use secure checkout
       - name: Checkout the project repository
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
-          with:
-            fetch-depth: 1
-            persist-credentials: false
-            path: __PROJECT_CHECKOUT_DIR__
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          path: __PROJECT_CHECKOUT_DIR__
 
       - name: Build artifacts
         id: build-artifacts-action
         env:
           SLSA_OUTPUTS_ARTIFACTS_FILE: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR/$SLSA_ARTIFACTS_FILE
           SLSA_TOOL_INPUTS: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.inputs }}
+          SLSA_SECRETS: ${{ inputs.secrets }}
         run: |
           
           cat <<EOF >DATA
