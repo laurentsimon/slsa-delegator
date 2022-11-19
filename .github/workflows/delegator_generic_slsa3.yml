@@ -45,7 +45,7 @@ on:
         value: ${{ jobs.build-artifacts.outputs.build-artifacts-outputs }}
       attestations-download-name:
         description: "Name of the artifact to download all the attestations."
-        value: ${{ jobs.generate-provenance.outputs.metadata }}
+        value: ${{ jobs.generate-provenance.outputs.attestations-download-name }}
 
 jobs:
   # privacy-check verifies that the user has agreed for their repository name to be made public, via the rekor log.
@@ -118,7 +118,7 @@ jobs:
   build-artifacts-ubuntu:
     if: fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label == 'ubuntu-latest'
     outputs:
-      build-artifacts-outputs: ${{ steps.build-artifacts-action.outputs.outputs }}
+      build-artifacts-outputs: ${{ steps.build-artifacts-action.outputs.build-artifacts-outputs }}
     runs-on: ubuntu-latest
     # TODO: privacy-check, detect-env
     needs: [validate-token]
@@ -176,7 +176,6 @@ jobs:
         id: build-artifacts-action
         env:
           SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
-          #SLSA_TOOL_INPUTS: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.inputs }}
           SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
         run: |
