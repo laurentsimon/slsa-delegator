@@ -34,7 +34,6 @@ on:
 
           This argument is passed, unchanged, to the builder's Action's `build-artifacts`.
         required: false
-        default: ""
     inputs:
       slsa-token:
         description: "The SLSA token identifying the request"
