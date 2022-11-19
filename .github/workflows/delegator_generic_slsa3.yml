@@ -42,7 +42,7 @@ on:
     outputs:
       build-artifacts-outputs:
         description: "The outputs from the build-artitacts Action, unchanged."
-        value: ${{ jobs.build-artifacts.outputs.build-artifacts-outputs }}
+        value: ${{ jobs.build-artifacts-ubuntu.outputs.build-artifacts-outputs }}
       attestations-download-name:
         description: "Name of the artifact to download all the attestations."
         value: ${{ jobs.generate-provenance.outputs.attestations-download-name }}
@@ -176,6 +176,7 @@ jobs:
         id: build-artifacts-action
         env:
           SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
         run: |
