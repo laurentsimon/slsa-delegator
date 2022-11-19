@@ -103,7 +103,7 @@ jobs:
               "reusable-workflow":{
                 "path": "./github/workflows/builder_slsa3.yml",
                 "repository": "laurentsimon/slsa-delegated-tool",
-                "ref": "main",
+                "ref": "main"
               },
               "inputs":{
                 "name1": "value1",
