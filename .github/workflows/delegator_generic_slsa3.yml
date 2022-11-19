@@ -1,0 +1,217 @@
+# Copyright 2022 SLSA Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: SLSA builder delegator
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  SLSA_OUTPUTS_DIR: slsa-outputs
+  SLSA_ARTIFACTS_FILE: artifacts.json
+
+on:
+  workflow_call:
+    secrets:
+      secrets:
+        description: >
+          Optional secret, seperated by a space.
+
+          This argument is passed, unchanged, to the builder's Action's `build-artifacts`.
+        required: false
+        default: ""
+    inputs:
+      slsa-token:
+        description: "The SLSA token identifying the request"
+        required: true
+        type: string
+    outputs:
+      build-artifacts-outputs:
+        description: "The outputs from the build-artitacts Action, unchanged."
+        value: ${{ jobs.build-artifacts.outputs.outputs }}
+      attestations-metadata:
+        description: >
+          Metadata about the attestations that were generated. The metadata includes:
+          - the name of the (single) artifact containing all the attestations, downloadable via 'actions/download-artifacts' ,
+          - the list of each attestation names. (NOTE: can augment the stucture with subjects, etc.)
+        value: ${{ jobs.generate-provenance.outputs.metadata }}
+
+jobs:
+  # privacy-check verifies that the user has agreed for their repository name to be made public, via the rekor log.
+  # privacy-check:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Check private repos
+  #       uses: slsa-framework/slsa-github-generator/.github/actions/privacy-check@main
+  #       with:
+  #         error_message: "Repository is private. The workflow has halted in order to keep the repository name from being exposed in the public transparency log. Set 'private-repository' to override."
+  #         override: ${{ inputs.allow-private-repository }}
+
+  # detect-env detects the reusable workflow's repository and ref for use later
+  # in the workflow.
+  # detect-env:
+  #   outputs:
+  #     repository: ${{ steps.detect.outputs.repository }}
+  #     ref: ${{ steps.detect.outputs.ref }}
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     id-token: write # Needed to detect the current reusable repository and ref.
+  #   steps:
+  #     - name: Detect the generator ref
+  #       id: detect
+  #       uses: slsa-framework/slsa-github-generator/.github/actions/detect-workflow@main
+
+  # validate-token validate the slsa token.
+  validate-token:
+    outputs:
+      slsa-token: ${{ steps.validate.outputs.slsa-token }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: validate the token
+        id: validate
+        run: |
+          # TODO: verify using JSON works and does not lead to parsing problems.
+          cat <<EOF >DATA
+          {
+            "version": 1,
+            "builder":{
+              "private-repository": false,
+              "runner-label": "ubuntu-latest"
+            },
+            "tool":{
+              "actions": {
+                "build-artifacts":{
+                  "path": "./github/workflows/builder_slsa3/build-artifacts"
+                  }
+              },
+              "reusable-workflow":{
+                "path": "./github/workflows/builder_slsa3.yml",
+                "repository": "laurentsimon/tool",
+                "ref": "main",
+              },
+              "inputs":{
+                "name1": "value1",
+                "name2": "value2"
+              }
+            }
+          }
+          EOF
+          echo "slsa-token=$(jq -c . DATA)" >> "$GITHUB_OUTPUT"
+
+  # build-artifacts-ubuntu builds the projects.
+  build-artifacts-ubuntu:
+    if: fromJson(needs.validate-token.outputs.slsa-token).delegator.runner-label == 'ubuntu-latest'
+    outputs:
+      build-artifacts-outputs: ${{ steps.build-artifacts-action.outputs.outputs }}
+    runs-on: ubuntu-latest
+    # TODO: privacy-check, detect-env
+    needs: [validate-token]
+    permissions:
+      # TODO: we should avoid these permissions for build systems that 'run' dependency codes
+      # during 'compilation': e.g., npm's install scripts.
+      contents: write # For release assets.
+      packages: write # For publishing to GitHub packages.
+    steps:
+      - name: Checkout the builder
+        # TODO: use a secure builder checkout.
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
+          with:
+            fetch-depth: 1
+            persist-credentials: false
+            repository: "laurentsimon/slsa-delegator"
+            ref: "main"
+            path: __BUILDER_CHECKOUT_DIR__
+
+      - name: Checkout the tool
+        # TODO: use a secure tool checkout.
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
+          with:
+            fetch-depth: 1
+            persist-credentials: false
+            repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
+            ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
+            path: __TOOL_CHECKOUT_DIR__
+
+      # TODO: This should be part of the tool checkout Action.
+      - name: Link the Action / create output folder
+        env:
+          TOOL_PATH: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
+        run:
+          echo "ACTION_PATH=$ACTION_PATH"
+          ln -s ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" ./__TOOL_ACTION_DIR__
+
+          mkdir "$GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
+
+      # TODO: use secure checkout
+      - name: Checkout the project repository
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
+          with:
+            fetch-depth: 1
+            persist-credentials: false
+            path: __PROJECT_CHECKOUT_DIR__
+
+      - name: Build artifacts
+        id: build-artifacts-action
+        env:
+          SLSA_OUTPUTS_ARTIFACTS_FILE: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR/$SLSA_ARTIFACTS_FILE
+          SLSA_TOOL_INPUTS: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.inputs }}
+        run: |
+          
+          cat <<EOF >DATA
+          {
+            "version": 1,
+            "attestation1.intoto.json":[
+              {
+              "name": "artifact11",
+              "digest": "abcde"
+              },
+              {
+              "name": "artifact12",
+              "digest": "iuyreq"
+              }
+            ],
+            "attestation2.intoto.json":[
+              {
+              "name": "artifact21",
+              "digest": "abcde"
+              },
+              {
+              "name": "artifact22",
+              "digest": "iuyreq"
+              }
+            ]
+          }
+          EOF
+          echo "build-artifacts-outputs=$(jq -c . DATA)" >> "$GITHUB_OUTPUT"
+          #run: ./__TOOL_ACTION_DIR__
+
+  # generate-provenance generates and signs the provenance.
+  generate-provenance:
+    needs: [validate-token, build-artifacts-ubuntu]
+    outputs:
+      attestations-download-name: "slsa-attestations-random-number"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate and sign
+        id: generate-sign
+        run: echo "generated and signed"
+      
+      - name: Upload the files
+        run: echo "uploaded with name slsa-attestations-random-number"
+
+  
