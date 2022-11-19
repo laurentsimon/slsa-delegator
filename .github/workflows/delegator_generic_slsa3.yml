@@ -161,7 +161,7 @@ jobs:
         run:
           echo "ACTION_PATH=$ACTION_PATH"
           ln -s ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" ./__TOOL_ACTION_DIR__
-
+          ls -l
           mkdir "$GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
 
       # TODO: use secure checkout
@@ -177,7 +177,7 @@ jobs:
         env:
           SLSA_OUTPUTS_ARTIFACTS_FILE: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR/$SLSA_ARTIFACTS_FILE
           SLSA_TOOL_INPUTS: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.inputs }}
-          SLSA_SECRETS: ${{ inputs.secrets }}
+          SLSA_SECRETS: ${{ secrets.secrets }}
         run: |
           
           cat <<EOF >DATA
