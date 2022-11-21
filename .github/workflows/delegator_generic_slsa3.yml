@@ -161,24 +161,7 @@ jobs:
           ACTION_DIR: __TOOL_ACTION_DIR__
         run: |
           set -euo pipefail
-          # echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          # ls -l
-          # echo
-          # echo "ACTION_PATH=$ACTION_PATH"
-          # echo "files in tool:"
-          # ls -la ./__TOOL_CHECKOUT_DIR__/
-          # tree -a ./__TOOL_CHECKOUT_DIR__/
-
-          # echo "files in Action:"
-          # ls ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/"
-
-          # mkdir -p "$ACTION_DIR"
-          # mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* "$ACTION_DIR"/
-          # chmod 777 "$ACTION_DIR"/*
-          # echo "moved Action files:"
-          # ls -l "$ACTION_DIR"/
-          # tree -a "$ACTION_DIR"/
-
+         
           echo "ACTION_PATH=$ACTION_PATH"
           mkdir -p "$ACTION_DIR"
           mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* "$ACTION_DIR"/
@@ -194,7 +177,7 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          path: __PROJECT_CHECKOUT_DIR__
+          #path: __PROJECT_CHECKOUT_DIR__
 
       - name: Test
         # env:
