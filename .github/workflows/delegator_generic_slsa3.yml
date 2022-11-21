@@ -22,7 +22,7 @@ defaults:
     shell: bash
 
 env:
-  SLSA_OUTPUTS_DIR: slsa-outputs
+  SLSA_OUTPUTS_DIR: __SLSA_OUTPUTS_DIR__
   SLSA_ARTIFACTS_FILE: artifacts.json
 
 on:
