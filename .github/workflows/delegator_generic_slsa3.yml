@@ -175,8 +175,8 @@ jobs:
           mkdir -p "$ACTION_DIR"
           mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* "$ACTION_DIR/"
           echo "moved Action files:"
-          ls -l "$ACTION_DIR/"
-          tree -a "$ACTION_DIR/"
+          ls -l "$ACTION_DIR"/
+          tree -a "$ACTION_DIR"/
 
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
