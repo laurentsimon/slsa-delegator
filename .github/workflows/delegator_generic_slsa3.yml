@@ -178,6 +178,7 @@ jobs:
           persist-credentials: false
           path: __PROJECT_CHECKOUT_DIR__
 
+      # TODO: https://goreleaser.com/errors/dirty/
       - name: Move the project repository
         env:
           REPOSITORY_NAME: ${{ github.event.repository.name }}
