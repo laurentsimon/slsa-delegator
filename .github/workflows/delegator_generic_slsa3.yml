@@ -97,7 +97,7 @@ jobs:
             "tool":{
               "actions": {
                 "build-artifacts":{
-                  "path": "./github/workflows/tool1_slsa3/actions/build-artifacts-composite"
+                  "path": ".github/workflows/tool1_slsa3/actions/build-artifacts-composite"
                   }
               },
               "reusable-workflow":{
@@ -157,8 +157,10 @@ jobs:
       # TODO: This should be part of the tool checkout Action.
       - name: Link the Action / create output folder
         env:
-          TOOL_PATH: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
-        run:
+          ACTION_PATH: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
+        run: |
+          set -euo pipefail
+
           echo "ACTION_PATH=$ACTION_PATH"
           ln -s ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" ./__TOOL_ACTION_DIR__
           ls -l
