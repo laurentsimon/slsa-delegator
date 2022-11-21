@@ -158,7 +158,7 @@ jobs:
       - name: Link the Action / create output folder
         env:
           ACTION_PATH: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
-          ACTION_DIR: __TOOL_ACTION_DIR__/build-artifacts
+          ACTION_DIR: __TOOL_ACTION_DIR__
         run: |
           set -euo pipefail
           # echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
@@ -180,9 +180,9 @@ jobs:
           # tree -a "$ACTION_DIR"/
 
           echo "ACTION_PATH=$ACTION_PATH"
-          mkdir -p some/actions/
-          mv ./__TOOL_CHECKOUT_DIR__/actions/build-artifacts-composite/* some/actions/
-          ls some/actions/
+          mkdir -p "$ACTION_DIR"
+          mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* "$ACTION_DIR"/
+          ls "$ACTION_DIR"/
 
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
@@ -203,7 +203,7 @@ jobs:
           echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE/__PROJECT_CHECKOUT_DIR__" >> $GITHUB_ENV
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           ls -l
-          ls some/actions/
+          ls __TOOL_ACTION_DIR__/
 
       - name: Build artifacts
         id: build-artifacts-action
@@ -213,7 +213,7 @@ jobs:
           # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
-        run: ./some/actions
+          uses: ./__TOOL_ACTION_DIR__
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
