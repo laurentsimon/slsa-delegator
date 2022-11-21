@@ -97,7 +97,7 @@ jobs:
             "tool":{
               "actions": {
                 "build-artifacts":{
-                  "path": ".github/workflows/tool1_slsa3/actions/build-artifacts-composite"
+                  "path": "actions/build-artifacts-composite"
                   }
               },
               "reusable-workflow":{
