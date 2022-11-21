@@ -158,14 +158,13 @@ jobs:
       - name: Link the Action / create output folder
         env:
           ACTION_PATH: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
-          ACTION_DIR: __TOOL_ACTION_DIR__
         run: |
           set -euo pipefail
          
           echo "ACTION_PATH=$ACTION_PATH"
-          mkdir -p "$ACTION_DIR"
-          mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* "$ACTION_DIR"/
-          ls "$ACTION_DIR"/
+          mkdir -p __TOOL_ACTION_DIR__
+          mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* __TOOL_ACTION_DIR__/
+          ls __TOOL_ACTION_DIR__/
 
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
@@ -185,7 +184,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          mv __PROJECT_CHECKOUT_DIR__ "$REPOSITORY_NAME"
+          mv __PROJECT_CHECKOUT_DIR__/"$REPOSITORY_NAME"/* .
 
       - name: Test
         # env:
