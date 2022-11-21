@@ -164,7 +164,7 @@ jobs:
           ls -l
           echo
           echo "ACTION_PATH=$ACTION_PATH"
-          ln -s ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" ./__TOOL_ACTION_DIR__
+          cp -R ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" ./__TOOL_ACTION_DIR__
           ls -l ./__TOOL_ACTION_DIR__
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
