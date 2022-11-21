@@ -101,7 +101,7 @@ jobs:
                   }
               },
               "reusable-workflow":{
-                "path": "./github/workflows/builder_slsa3.yml",
+                "path": ".github/workflows/builder_slsa3.yml",
                 "repository": "laurentsimon/slsa-delegated-tool",
                 "ref": "main"
               },
@@ -164,8 +164,9 @@ jobs:
           ls -l
           echo
           echo "ACTION_PATH=$ACTION_PATH"
-          cp -R ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" ./__TOOL_ACTION_DIR__
-          ls -l ./__TOOL_ACTION_DIR__
+          mkdir -p __TOOL_ACTION_DIR__/action
+          cp -R ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/*" __TOOL_ACTION_DIR__/action/
+          ls -l ./__TOOL_ACTION_DIR__/action/
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
           mkdir "$GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
@@ -192,7 +193,7 @@ jobs:
           # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
-        run: ./__TOOL_ACTION_DIR__
+        run: ./__TOOL_ACTION_DIR__/action
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
