@@ -177,15 +177,14 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          clean: false
-          #path: __PROJECT_CHECKOUT_DIR__
+          path: __PROJECT_CHECKOUT_DIR__
 
-      # - name: Move the project repository
-      #   uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
-      #   with:
-      #     fetch-depth: 1
-      #     persist-credentials: false
-      #     path: __PROJECT_CHECKOUT_DIR__
+      - name: Move the project repository
+        REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+
+          mv __PROJECT_CHECKOUT_DIR__ "$REPOSITORY_NAME"
 
       - name: Test
         # env:
