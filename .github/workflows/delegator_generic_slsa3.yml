@@ -176,10 +176,11 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          #path: __PROJECT_CHECKOUT_DIR__
+          path: __PROJECT_CHECKOUT_DIR__
 
       - name: Test
         run: |
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE/__PROJECT_CHECKOUT_DIR__" >> $GITHUB_ENV
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           ls -l
 
