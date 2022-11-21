@@ -180,7 +180,8 @@ jobs:
           path: __PROJECT_CHECKOUT_DIR__
 
       - name: Move the project repository
-        REPOSITORY_NAME: ${{ github.event.repository.name }}
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
         run: |
           set -euo pipefail
 
