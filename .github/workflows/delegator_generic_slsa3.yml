@@ -142,7 +142,7 @@ jobs:
           persist-credentials: false
           repository: "laurentsimon/slsa-delegator"
           ref: "main"
-          path: __BUILDER_CHECKOUT_DIR__
+          path: ./__BUILDER_CHECKOUT_DIR__
 
       - name: Checkout the tool
         # TODO: use a secure tool checkout.
