@@ -171,7 +171,7 @@ jobs:
           echo "files in Action:"
           ls ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/"
 
-          mkdir __TOOL_ACTION_DIR__/action/
+          mkdir ./__TOOL_ACTION_DIR__/action/
           mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" __TOOL_ACTION_DIR__/action/
           echo "moved Action files:"
           ls -l ./__TOOL_ACTION_DIR__/action/
