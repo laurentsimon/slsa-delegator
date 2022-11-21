@@ -166,13 +166,17 @@ jobs:
           echo "ACTION_PATH=$ACTION_PATH"
           echo "files in tool:"
           ls -la ./__TOOL_CHECKOUT_DIR__/
-          tree ./__TOOL_CHECKOUT_DIR__/
+          tree -a ./__TOOL_CHECKOUT_DIR__/
 
           echo "files in Action:"
           ls ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/"
+
+          mkdir __TOOL_ACTION_DIR__/action/
           mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" __TOOL_ACTION_DIR__/action/
           echo "moved Action files:"
           ls -l ./__TOOL_ACTION_DIR__/action/
+          tree -a ./__TOOL_ACTION_DIR__/action/
+
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
           mkdir "$GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
