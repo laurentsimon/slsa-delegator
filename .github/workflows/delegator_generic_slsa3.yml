@@ -173,7 +173,7 @@ jobs:
           ls ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/"
 
           mkdir -p "$ACTION_DIR"
-          mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/*" "$ACTION_DIR/"
+          mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* "$ACTION_DIR/"
           echo "moved Action files:"
           ls -l "$ACTION_DIR/"
           tree -a "$ACTION_DIR/"
