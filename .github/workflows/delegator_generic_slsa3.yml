@@ -185,7 +185,8 @@ jobs:
           set -euo pipefail
 
           ls __PROJECT_CHECKOUT_DIR__/
-          mv __PROJECT_CHECKOUT_DIR__/"$REPOSITORY_NAME"/* .
+          mkdir "$REPOSITORY_NAME"
+          mv __PROJECT_CHECKOUT_DIR__/* ./"$REPOSITORY_NAME"/
 
       - name: Test
         # env:
