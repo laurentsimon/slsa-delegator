@@ -160,10 +160,14 @@ jobs:
           ACTION_PATH: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
         run: |
           set -euo pipefail
-
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          ls -l
+          echo
           echo "ACTION_PATH=$ACTION_PATH"
           ln -s ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH/" ./__TOOL_ACTION_DIR__
-          ls -l
+          ls -l ./__TOOL_ACTION_DIR__
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "SLSA_OUTPUTS_DIR: $GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
           mkdir "$GITHUB_WORKSPACE/$SLSA_OUTPUTS_DIR"
 
       # TODO: use secure checkout
@@ -173,6 +177,11 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
           #path: __PROJECT_CHECKOUT_DIR__
+
+      - name: Test
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          ls -l
 
       - name: Build artifacts
         id: build-artifacts-action
