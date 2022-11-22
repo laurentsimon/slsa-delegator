@@ -96,7 +96,7 @@ jobs:
         env:
           SLSA_TOKEN: ${{ inputs.slsa-token }}
         run: |
-          # TODO: verify using JSON works and does not lead to parsing problems.
+          # TODO: verify token.
           token=$(echo $SLSA_TOKEN | base64 -d)
           echo "token=$token"
           echo
@@ -105,7 +105,7 @@ jobs:
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
-    #if: fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label == 'ubuntu-latest'
+    if: fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label == 'ubuntu-latest'
     outputs:
       build-artifacts-outputs: ${{ steps.build-artifacts-action.outputs.slsa-artifacts }}
     runs-on: ubuntu-latest
@@ -117,13 +117,13 @@ jobs:
       contents: write # For release assets.
       packages: write # For publishing to GitHub packages.
     steps:
-      - name: debug
-        env:
-          TOKEN: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
-          RUNNER: ${{ fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label }}
-        run: |
-          echo "$TOKEN: $TOKEN"
-          echo "$RUNNER: $RUNNER"
+      # - name: debug
+      #   env:
+      #     TOKEN: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
+      #     RUNNER: ${{ fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label }}
+      #   run: |
+      #     echo "$TOKEN: $TOKEN"
+      #     echo "$RUNNER: $RUNNER"
       - name: Checkout the builder
         # TODO: use a secure builder checkout.
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
@@ -133,7 +133,7 @@ jobs:
           repository: ${{ needs.detect-env.outputs.repository }}
           ref: ${{ needs.detect-env.outputs.ref }}
           path: __BUILDER_CHECKOUT_DIR__
-      - run: mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
+      #- run: mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
       - name: Checkout the tool
         # TODO: use a secure tool checkout.
@@ -144,7 +144,7 @@ jobs:
           repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
           ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
           path: __TOOL_CHECKOUT_DIR__
-      - run: mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
+      #- run: mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
       # TODO: This should be part of the tool checkout Action.
       - name: Link the Action / create output folder
@@ -154,15 +154,14 @@ jobs:
           set -euo pipefail
          
           echo "ACTION_PATH=$ACTION_PATH"
-          mkdir -p ../__TOOL_ACTION_DIR__
-          mv ../__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* ../__TOOL_ACTION_DIR__/
-          ls ../__TOOL_ACTION_DIR__/
+          mkdir -p ./__TOOL_ACTION_DIR__
+          mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* ./__TOOL_ACTION_DIR__/
+          ls ./__TOOL_ACTION_DIR__/
 
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: ../$SLSA_OUTPUTS_DIR"
-          mkdir "../$SLSA_OUTPUTS_DIR"
+          mkdir "$SLSA_OUTPUTS_DIR"
 
-          ls -l ../
           ls -l
 
       # TODO: use secure checkout
@@ -171,7 +170,7 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          #path: __PROJECT_CHECKOUT_DIR__
+          path: __PROJECT_CHECKOUT_DIR__
 
       # TODO: https://goreleaser.com/errors/dirty/
       # - name: Move the project repository
@@ -190,7 +189,7 @@ jobs:
           echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE/__PROJECT_CHECKOUT_DIR__" >> $GITHUB_ENV
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           ls -l
-          ls ../__TOOL_ACTION_DIR__/
+          ls ./__TOOL_ACTION_DIR__/
 
       - name: Build artifacts
         id: build-artifacts-action
@@ -200,7 +199,7 @@ jobs:
           # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
-        uses: ./../__TOOL_ACTION_DIR__
+        uses: ./__TOOL_ACTION_DIR__
         with:
           # If this is not reliable, we'll change it to base64.
           inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.actions.inputs) }}
