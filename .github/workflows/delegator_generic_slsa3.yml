@@ -188,7 +188,7 @@ jobs:
         #   ACTION_DIR: __TOOL_ACTION_DIR__/build-artifacts
         env:
           SLSA_TOKEN: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
-          INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.actions.inputs) }}
+          INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
         run: |
           echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE/__PROJECT_CHECKOUT_DIR__" >> $GITHUB_ENV
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
@@ -202,14 +202,14 @@ jobs:
         id: build-artifacts-action
         env:
           # TODO: if saved in file, this implies the Action is *not* a docker-based Action.
-          SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
           # Note: JSON-formatted field need to use toJson().
-          SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.actions.inputs) }}
+          SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
         uses: ./../__TOOL_ACTION_DIR__
         with:
           # If this is not reliable, we'll change it to base64.
-          inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.actions.inputs) }}
+          inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
