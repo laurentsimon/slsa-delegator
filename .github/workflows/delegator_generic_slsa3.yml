@@ -97,10 +97,10 @@ jobs:
           SLSA_TOKEN: ${{ inputs.slsa-token }}
         run: |
           # TODO: verify using JSON works and does not lead to parsing problems.
-          echo "token=$SLSA_TOKEN"
+          echo "token=$(echo $SLSA_TOKEN | base64 -d"
           echo
 
-          echo "slsa-token=$(echo $SLSA_TOKEN | jq -c .)" >> "$GITHUB_OUTPUT"
+          echo "slsa-token=$(echo $token | jq -c .)" >> "$GITHUB_OUTPUT"
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
