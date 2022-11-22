@@ -192,6 +192,9 @@ jobs:
           ls -l
           ls ../__TOOL_ACTION_DIR__/
 
+          echo "slsa-token: ${{ toJson(needs.validate-token.outputs.slsa-token) }}"
+          echo "inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.actions.inputs) }}"
+
       - name: Build artifacts
         id: build-artifacts-action
         env:
