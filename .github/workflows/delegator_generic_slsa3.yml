@@ -210,7 +210,7 @@ jobs:
           # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
-        uses: ../__TOOL_ACTION_DIR__
+        uses: ./../__TOOL_ACTION_DIR__
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
