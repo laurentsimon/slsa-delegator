@@ -84,38 +84,13 @@ jobs:
       - name: validate the token
         id: validate
         env:
-          SLSA_TOKEN: ${{ inputs.slsa-token }}
+          SLSA_TOKEN: ${{ toJson(inputs.slsa-token) }}
         run: |
           # TODO: verify using JSON works and does not lead to parsing problems.
           echo "token=$SLSA_TOKEN"
           echo
 
-          cat <<EOF >DATA
-          {
-            "version": 1,
-            "builder":{
-              "private-repository": false,
-              "runner-label": "ubuntu-latest"
-            },
-            "tool":{
-              "actions": {
-                "build-artifacts":{
-                  "path": "actions/build-artifacts-composite"
-                  }
-              },
-              "reusable-workflow":{
-                "path": ".github/workflows/builder_slsa3.yml",
-                "repository": "laurentsimon/slsa-delegated-tool",
-                "ref": "main"
-              },
-              "inputs":{
-                "name1": "value1",
-                "name2": "value2"
-              }
-            }
-          }
-          EOF
-          echo "slsa-token=$(jq -c . DATA)" >> "$GITHUB_OUTPUT"
+          echo "slsa-token=$SLSA_TOKEN" >> "$GITHUB_OUTPUT"
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
@@ -214,6 +189,9 @@ jobs:
           SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
         uses: ./../__TOOL_ACTION_DIR__
+        with:
+          # If this is not reliable, we'll change it to base64.
+          inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.actions.inputs) }}
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
