@@ -133,7 +133,7 @@ jobs:
           repository: ${{ needs.detect-env.outputs.repository }}
           ref: ${{ needs.detect-env.outputs.ref }}
           path: __BUILDER_CHECKOUT_DIR__
-      #- run: mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
+      - run: mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
       - name: Checkout the tool
         # TODO: use a secure tool checkout.
@@ -144,7 +144,7 @@ jobs:
           repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
           ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
           path: __TOOL_CHECKOUT_DIR__
-      #- run: mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
+      - run: mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
       # TODO: This should be part of the tool checkout Action.
       - name: Link the Action / create output folder
@@ -154,14 +154,15 @@ jobs:
           set -euo pipefail
          
           echo "ACTION_PATH=$ACTION_PATH"
-          mkdir -p ./__TOOL_ACTION_DIR__
-          mv ./__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* ./__TOOL_ACTION_DIR__/
-          ls ./__TOOL_ACTION_DIR__/
+          mkdir -p ../__TOOL_ACTION_DIR__
+          mv ../__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* ../__TOOL_ACTION_DIR__/
+          ls ../__TOOL_ACTION_DIR__/
 
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: ../$SLSA_OUTPUTS_DIR"
-          mkdir "$SLSA_OUTPUTS_DIR"
+          mkdir "../$SLSA_OUTPUTS_DIR"
 
+          ls -l ../
           ls -l
 
       # TODO: use secure checkout
@@ -170,7 +171,7 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          path: __PROJECT_CHECKOUT_DIR__
+          #path: __PROJECT_CHECKOUT_DIR__
 
       # TODO: https://goreleaser.com/errors/dirty/
       # - name: Move the project repository
@@ -189,7 +190,7 @@ jobs:
           echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE/__PROJECT_CHECKOUT_DIR__" >> $GITHUB_ENV
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           ls -l
-          ls ./__TOOL_ACTION_DIR__/
+          ls ../__TOOL_ACTION_DIR__/
 
       - name: Build artifacts
         id: build-artifacts-action
@@ -199,7 +200,7 @@ jobs:
           # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
-        uses: ./__TOOL_ACTION_DIR__
+        uses: ./../__TOOL_ACTION_DIR__
         with:
           # If this is not reliable, we'll change it to base64.
           inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.actions.inputs) }}
