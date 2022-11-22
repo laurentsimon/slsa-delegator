@@ -97,7 +97,8 @@ jobs:
           SLSA_TOKEN: ${{ inputs.slsa-token }}
         run: |
           # TODO: verify using JSON works and does not lead to parsing problems.
-          echo "token=$(echo $SLSA_TOKEN | base64 -d"
+          token=$(echo $SLSA_TOKEN | base64 -d)
+          echo "token=$token"
           echo
 
           echo "slsa-token=$(echo $token | jq -c .)" >> "$GITHUB_OUTPUT"
