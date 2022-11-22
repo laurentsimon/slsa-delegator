@@ -94,12 +94,11 @@ jobs:
       - name: validate the token
         id: validate
         env:
-          SLSA_TOKEN: ${{ toJson(inputs.slsa-token) }}
+          SLSA_TOKEN: ${{ inputs.slsa-token }}
         run: |
           # TODO: verify using JSON works and does not lead to parsing problems.
           echo "token=$SLSA_TOKEN"
           echo
-
 
           echo "slsa-token=$(echo $SLSA_TOKEN | jq -c .)" >> "$GITHUB_OUTPUT"
 
@@ -119,8 +118,8 @@ jobs:
     steps:
       - name: debug
         env:
-          TOKEN: toJson(needs.validate-token.outputs.slsa-token)
-          RUNNER: fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label
+          TOKEN: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
+          RUNNER: ${{ fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label }}
         run: |
           echo "$TOKEN: $TOKEN"
           echo "$RUNNER: $RUNNER"
