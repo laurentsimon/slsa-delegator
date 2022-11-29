@@ -30,6 +30,6 @@ runs:
       run: |
           echo "audience: $SLSA_AUDIENCE"
           echo "token: $SLSA_TOKEN"
-          validated-token="$(echo $SLSA_TOKEN| cut -d '.' -f2 | base64 -d)"
-          echo "validated-token: $validated-token"
-          echo "slsa-validated-token=$validated-token" >> "$GITHUB_OUTPUT"
+          validated_token="$(echo $SLSA_TOKEN| cut -d '.' -f2 | base64 -d | jq -c .)"
+          echo "validated-token: $validated_token"
+          echo "slsa-validated-token=$validated_token" >> "$GITHUB_OUTPUT"
