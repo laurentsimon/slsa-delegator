@@ -81,15 +81,6 @@ runs:
           EOF
           echo "slsa-token=$(cat DATA | base64 -w0)" >> "$GITHUB_OUTPUT"
 
-    - name: Debug
-      shell: bash
-      env:
-        REPO: ${{ github.action_repository }}
-        REF: ${{ github.action_ref }}
-      run: |
-        echo "repo: $REPO"
-        echo "ref: $REF"
-
     - name: Checkout the builder
       # TODO: use a secure builder checkout.
       uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
@@ -103,6 +94,19 @@ runs:
         ref: ${{ github.action_ref }}
         path: __BUILDER_CHECKOUT_DIR__
     
+    - name: Debug
+      shell: bash
+      env:
+        REPO: ${{ github.action_repository }}
+        REF: ${{ github.action_ref }}
+      run: |
+        echo "repo: $REPO"
+        echo "ref: $REF"
+
+        pwd
+        ls
+        tree
+
     - name: Sign the token
       id: sign
       uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
