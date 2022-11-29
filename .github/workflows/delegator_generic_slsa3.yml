@@ -84,8 +84,6 @@ jobs:
     steps:
       # TODO: use a secure builder checkout.
       - name: Checkout the builder
-        # TODO: use a secure builder checkout.
-        - name: Checkout the builder
         # This pin must be added to the release freezze reference pre-submits.
         uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
         with:
