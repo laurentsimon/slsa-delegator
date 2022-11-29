@@ -1,0 +1,91 @@
+name: setup token
+
+description: 'setup token'
+
+inputs:
+
+  # audience.
+  slsa-workflow-recipient:
+    description: 'the workflow filename that this token is intended for'
+    type: string
+    required: true
+
+  slsa-private-repository:
+    description: 'Set to true for private repositories.'
+    type: boolean
+    required: true
+
+  slsa-runner-label:
+    description: 'Runner label to use.'
+    type: choice
+    options: 
+        - ubuntu-latest
+    required: true
+
+  slsa-build-artifacts-action-path:
+    description: 'The action path to invoke. Example: ./actions/build-artifacts'
+    type: string
+    required: true
+
+  internal-slsa-inputs:
+    description: 'The inputs to the tool's reusable workflow'
+    type: string
+    default: ${{ inputs }}
+    required: false
+
+outputs:
+  slsa-token:
+    description: "slsa token"
+    value: ${{ steps.sign.outputs.slsa-signed-token }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate a token
+      id: generate
+      shell: bash
+      env:
+        SLSA_INPUTS: ${{ toJson(inputs.internal-slsa-inputs) }}
+        SLSA_RUNNER_LABEL: ${{ inputs.slsa-runner-label }}
+        SLSA_PRIVATE_REPOSITORY: ${{ inputs.slsa-private-repository }}
+        SLSA_ACTION_PATH: ${{ inputs.slsa-build-artifacts-action-path }}
+        SLSA_RECIPIENT: ${{ inputs.slsa-workflow-recipient }}
+      run: |
+          # TODO: call the Action to generate and sign the token.
+          echo "inputs: $SLSA_INPUTS"
+          echo "runner: $SLSA_RUNNER_LABEL"
+          echo "private: $SLSA_PRIVATE_REPOSITORY"
+          echo "path: $SLSA_ACTION_PATH"
+          cat <<EOF >DATA
+          {
+            "version": 1,
+            "builder":{
+              "private-repository": $PRIVATE_REPOSITORY,
+              "runner-label": "$SLSA_RUNNER_LABEL"
+            },
+            "tool":{
+              "actions": {
+                "build-artifacts":{
+                  "path": "$SLSA_ACTION_PATH"
+                  }
+              },
+              "reusable-workflow":{
+                "path": "$SLSA_RECIPIENT",
+                "repository": "laurentsimon/slsa-delegated-tool",
+                "ref": "main"
+              },
+              "inputs":{
+                "name1": "value1",
+                "name2": "value2"
+              }
+            }
+          }
+          EOF
+          echo "slsa-token=$(cat DATA)" >> "$GITHUB_OUTPUT"
+    
+    - name: Sign the token
+      id: sign
+        # TODO: update the path to /tmp.
+      uses: ../__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
+        with:
+          slsa-raw-token: ${{ toJson(steps.generate.slsa-token) }}

@@ -1,0 +1,37 @@
+name: sign token
+
+description: 'sign token'
+
+inputs:
+
+  # Audience.
+  slsa-token-recipient:
+    description: 'the audience of the token'
+    type: string
+    required: true
+
+  slsa-raw-token:
+    description: 'the raw token to sign'
+    type: string
+    required: true
+
+outputs:
+  slsa-signed-token:
+    description: "slsa signed token"
+    value: ${{ steps.sign.outputs.slsa-signed-token }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Sign a token
+      id: sign
+      shell: bash
+      env:
+        SLSA_AUDIENCE: ${{ inputs.slsa-token-recipient }}
+        SLSA_RAW_TOKEN: ${{ inputs.slsa-raw-token }}
+      run: |
+          # TODO: call the Action to generate and sign the token.
+          echo "audience: $SLSA_AUDIENCE"
+          echo "token: $SLSA_RAW_TOKEN"
+          signed-token="SIGNED.$(echo $SLSA_RAW_TOKEN| base64 -w0)"
+          echo "slsa-signed-token=$signed-token" >> "$GITHUB_OUTPUT"

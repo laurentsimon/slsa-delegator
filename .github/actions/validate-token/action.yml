@@ -1,0 +1,36 @@
+name: validate token
+
+description: 'validate token'
+
+inputs:
+  slsa-workflow-recipient:
+    description: 'the audience of the token'
+    type: string
+    required: true
+
+  slsa-token:
+    description: 'the raw token to validate'
+    type: string
+    required: true
+
+outputs:
+  slsa-validated-token:
+    description: "slsa validated token"
+    value: ${{ steps.validate.outputs.slsa-validated-token }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate a token
+      id: validate
+      shell: bash
+      env:
+        SLSA_AUDIENCE: ${{ inputs.slsa-workflow-recipient }}
+        SLSA_TOKEN: ${{ inputs.slsa-token }}
+      run: |
+          # TODO: call the Action to generate and sign the token.
+          echo "audience: $SLSA_AUDIENCE"
+          echo "token: $SLSA_TOKEN"
+          validated-token="$(echo $SLSA_TOKEN| cut -d '.' -f2 | base64 -d)"
+          echo "validated-token: $validated-token"
+          echo "slsa-validated-token=$validated-token" >> "$GITHUB_OUTPUT"
