@@ -78,7 +78,7 @@ jobs:
   # validate-token validate the slsa token.
   validate-token:
     outputs:
-      slsa-token: ${{ steps.validate.outputs.slsa-token }}
+      slsa-token: ${{ steps.validate.outputs.slsa-validated-token }}
     runs-on: ubuntu-latest
     needs: [detect-env]
     steps:
@@ -91,17 +91,21 @@ jobs:
           ref: ${{ needs.detect-env.outputs.ref }}
           path: __BUILDER_CHECKOUT_DIR__
 
-      - name: validate the token
+      - name: Validate the token
         id: validate
-        env:
-          SLSA_TOKEN: ${{ inputs.slsa-token }}
-        run: |
-          # TODO: verify token.
-          token=$(echo $SLSA_TOKEN | base64 -d)
-          echo "token=$token"
-          echo
+        uses: ./__BUILDER_CHECKOUT_DIR__/actions/validate-token
+        with:
+          slsa-workflow-recipient: "delegator_generic_slsa3.yml"
+          slsa-token: ${{ inputs.slsa-token }}
+        # env:
+        #   SLSA_TOKEN: ${{ inputs.slsa-token }}
+        # run: |
+        #   # TODO: verify token.
+        #   token=$(echo $SLSA_TOKEN | base64 -d)
+        #   echo "token=$token"
+        #   echo
 
-          echo "slsa-token=$(echo $token | jq -c .)" >> "$GITHUB_OUTPUT"
+        #   echo "slsa-token=$(echo $token | jq -c .)" >> "$GITHUB_OUTPUT"
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
@@ -117,13 +121,13 @@ jobs:
       contents: write # For release assets.
       packages: write # For publishing to GitHub packages.
     steps:
-      # - name: debug
-      #   env:
-      #     TOKEN: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
-      #     RUNNER: ${{ fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label }}
-      #   run: |
-      #     echo "$TOKEN: $TOKEN"
-      #     echo "$RUNNER: $RUNNER"
+      - name: debug
+        env:
+          TOKEN: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
+          RUNNER: ${{ fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label }}
+        run: |
+          echo "$TOKEN: $TOKEN"
+          echo "$RUNNER: $RUNNER"
       - name: Checkout the builder
         # TODO: use a secure builder checkout.
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
@@ -208,8 +212,8 @@ jobs:
           SLSA_SECRETS: ${{ secrets.secrets }}
         uses: ./../__TOOL_ACTION_DIR__
         with:
-          # If this is not reliable, we'll change it to base64.
-          inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+          # TODO: move other inputs as arguments.
+          workflow-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
