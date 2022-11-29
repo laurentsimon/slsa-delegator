@@ -83,7 +83,7 @@ runs:
 
     - name: Checkout the builder
       # This pin must be added to the release freezze reference pre-submits.
-      uses: laurentsimon/secure-checkout@main
+      uses: laurentsimon/slsa-delegeator/.github/actions/secure-checkout@main
         
     - name: Debug
       shell: bash
