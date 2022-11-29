@@ -92,7 +92,7 @@ jobs:
 
       - name: Validate the token
         id: validate
-        uses: ./__BUILDER_CHECKOUT_DIR__/actions/validate-token
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/validate-token
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
           slsa-token: ${{ inputs.slsa-token }}
