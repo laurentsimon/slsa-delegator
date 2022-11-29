@@ -90,9 +90,11 @@ runs:
         # Resolve repo / ref dynamically.
         # Alternative: call the Action with a pin, and adds the pin to the reference release freeze checks:
         # Faster runtime but more maintenance.
+        # repository: laurentsimon/slsa-delegator
+        # ref: main
         repository: ${{ github.action_repository }}
         ref: ${{ github.action_ref }}
-        path: __BUILDER_CHECKOUT_DIR__
+        #path: __BUILDER_CHECKOUT_DIR__
     
     - name: Debug
       shell: bash
