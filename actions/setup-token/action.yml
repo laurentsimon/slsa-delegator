@@ -58,8 +58,8 @@ runs:
           {
             "version": 1,
             "builder":{
-              "private-repository": $PRIVATE_REPOSITORY,
-              "runner-label": "$SLSA_RUNNER_LABEL"
+              "private-repository": true,
+              "runner-label": "ubuntu-latest"
             },
             "tool":{
               "actions": {
@@ -68,7 +68,7 @@ runs:
                   }
               },
               "reusable-workflow":{
-                "path": "$SLSA_RECIPIENT",
+                "path": ".github/workflows/tool1_slsa3.yml",
                 "repository": "laurentsimon/slsa-delegated-tool",
                 "ref": "main"
               },
