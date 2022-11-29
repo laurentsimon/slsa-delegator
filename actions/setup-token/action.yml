@@ -3,7 +3,6 @@ name: setup token
 description: 'setup token'
 
 inputs:
-  # audience.
   slsa-workflow-recipient:
     description: 'the workflow filename that this token is intended for'
     type: string
@@ -107,3 +106,4 @@ runs:
       uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
       with:
         slsa-raw-token: ${{ steps.generate.slsa-token }}
+        slsa-token-recipient: ${{ inputs.slsa-workflow-recipient }}
