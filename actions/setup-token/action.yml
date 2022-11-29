@@ -64,7 +64,7 @@ runs:
             "tool":{
               "actions": {
                 "build-artifacts":{
-                  "path": "$SLSA_ACTION_PATH"
+                  "path": "./actions/build-artifacts-composite"
                   }
               },
               "reusable-workflow":{
