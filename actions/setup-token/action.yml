@@ -78,6 +78,9 @@ runs:
             }
           }
           EOF
+          echo "token:"
+          cat DATA
+          cat DATA | base64 -w0
           echo "slsa-token=$(cat DATA | base64 -w0)" >> "$GITHUB_OUTPUT"
 
     - name: Checkout the builder
@@ -101,12 +104,12 @@ runs:
         ls
         tree
 
-        echo "token: ${{ steps.generate.slsa-token }}"
+        echo "token: ${{ steps.generate.outputs.slsa-token }}"
         echo "recipient: ${{ inputs.slsa-workflow-recipient }}"
 
     - name: Sign the token
       id: sign
       uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
       with:
-        slsa-raw-token: ${{ steps.generate.slsa-token }}
+        slsa-raw-token: ${{ steps.generate.outputs.slsa-token }}
         slsa-token-recipient: ${{ inputs.slsa-workflow-recipient }}
