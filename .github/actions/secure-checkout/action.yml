@@ -2,17 +2,6 @@ name: secure checkout
 
 description: 'secure checkout'
 
-inputs:
-  repository:
-    description: '...'
-    type: string
-    required: true
-
-  ref:
-    description: '...'
-    type: string
-    required: true
-
 runs:
   using: 'composite'
   steps:
@@ -25,6 +14,6 @@ runs:
         # Resolve repo / ref dynamically.
         # Alternative: call the Action with a pin, and adds the pin to the reference release freeze checks:
         # Faster runtime but more maintenance.
-        repository: ${{ inputs.repository }}
-        ref: ${{ inputs.ref }}
+        repository: ${{ github.action_repository }}
+        ref: ${{ github.action_ref }}
         path: __BUILDER_CHECKOUT_DIR__
