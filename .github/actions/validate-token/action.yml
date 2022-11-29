@@ -28,7 +28,6 @@ runs:
         SLSA_AUDIENCE: ${{ inputs.slsa-workflow-recipient }}
         SLSA_TOKEN: ${{ inputs.slsa-token }}
       run: |
-          # TODO: call the Action to generate and sign the token.
           echo "audience: $SLSA_AUDIENCE"
           echo "token: $SLSA_TOKEN"
           validated-token="$(echo $SLSA_TOKEN| cut -d '.' -f2 | base64 -d)"
