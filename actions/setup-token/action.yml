@@ -101,6 +101,9 @@ runs:
         ls
         tree
 
+        echo "token: ${{ steps.generate.slsa-token }}"
+        echo "recipient: ${{ inputs.slsa-workflow-recipient }}"
+
     - name: Sign the token
       id: sign
       uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
