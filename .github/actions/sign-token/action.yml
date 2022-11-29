@@ -32,5 +32,5 @@ runs:
       run: |
           echo "audience: $SLSA_AUDIENCE"
           echo "token: $SLSA_RAW_TOKEN"
-          signed-token="SIGNED.$(echo $SLSA_RAW_TOKEN| base64 -w0)"
+          signed-token="SIGNED.$SLSA_RAW_TOKEN"
           echo "slsa-signed-token=$signed-token" >> "$GITHUB_OUTPUT"

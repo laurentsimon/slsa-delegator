@@ -79,7 +79,7 @@ runs:
             }
           }
           EOF
-          echo "slsa-token=$(cat DATA)" >> "$GITHUB_OUTPUT"
+          echo "slsa-token=$(cat DATA | base64 -w0)" >> "$GITHUB_OUTPUT"
 
     - name: Checkout the builder
       # TODO: use a secure builder checkout.
@@ -97,4 +97,4 @@ runs:
       id: sign
       uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token@main
       with:
-        slsa-raw-token: ${{ toJson(steps.generate.slsa-token) }}
+        slsa-raw-token: ${{ steps.generate.slsa-token }}
