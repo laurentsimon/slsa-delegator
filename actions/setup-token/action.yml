@@ -28,7 +28,7 @@ inputs:
     required: true
 
   internal-slsa-inputs:
-    description: 'The inputs to the tool's reusable workflow'
+    description: 'The inputs to the tool reusable workflow'
     type: string
     default: ${{ inputs }}
     required: false
