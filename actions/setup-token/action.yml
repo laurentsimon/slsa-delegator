@@ -82,19 +82,11 @@ runs:
           echo "slsa-token=$(cat DATA | base64 -w0)" >> "$GITHUB_OUTPUT"
 
     - name: Checkout the builder
-      # TODO: use a secure builder checkout.
-      uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
+      # This pin must be added to the release freezze reference pre-submits.
+      uses: laurentsimon/secure-checkout@main
       with:
-        fetch-depth: 1
-        persist-credentials: false
-        # Resolve repo / ref dynamically.
-        # Alternative: call the Action with a pin, and adds the pin to the reference release freeze checks:
-        # Faster runtime but more maintenance.
-        # repository: laurentsimon/slsa-delegator
-        # ref: main
         repository: ${{ github.action_repository }}
         ref: ${{ github.action_ref }}
-        #path: __BUILDER_CHECKOUT_DIR__
     
     - name: Debug
       shell: bash
