@@ -3,7 +3,6 @@ name: setup token
 description: 'setup token'
 
 inputs:
-
   # audience.
   slsa-workflow-recipient:
     description: 'the workflow filename that this token is intended for'
@@ -27,11 +26,10 @@ inputs:
     type: string
     required: true
 
-  internal-slsa-inputs:
+  slsa-workflow-inputs:
     description: 'The inputs to the tool reusable workflow'
     type: string
-    default: ${{ inputs }}
-    required: false
+    required: true
 
 outputs:
   slsa-token:
@@ -45,7 +43,7 @@ runs:
       id: generate
       shell: bash
       env:
-        SLSA_INPUTS: ${{ toJson(inputs.internal-slsa-inputs) }}
+        SLSA_INPUTS: ${{ toJson(inputs.slsa-workflow-inputs) }}
         SLSA_RUNNER_LABEL: ${{ inputs.slsa-runner-label }}
         SLSA_PRIVATE_REPOSITORY: ${{ inputs.slsa-private-repository }}
         SLSA_ACTION_PATH: ${{ inputs.slsa-build-artifacts-action-path }}

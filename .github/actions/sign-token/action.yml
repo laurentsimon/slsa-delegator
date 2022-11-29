@@ -30,7 +30,6 @@ runs:
         SLSA_AUDIENCE: ${{ inputs.slsa-token-recipient }}
         SLSA_RAW_TOKEN: ${{ inputs.slsa-raw-token }}
       run: |
-          # TODO: call the Action to generate and sign the token.
           echo "audience: $SLSA_AUDIENCE"
           echo "token: $SLSA_RAW_TOKEN"
           signed-token="SIGNED.$(echo $SLSA_RAW_TOKEN| base64 -w0)"
