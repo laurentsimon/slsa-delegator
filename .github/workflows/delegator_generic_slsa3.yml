@@ -65,8 +65,8 @@ jobs:
       repository: ${{ steps.detect.outputs.repository }}
       ref: ${{ steps.detect.outputs.ref }}
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write # Needed to detect the current reusable repository and ref.
+    # permissions:
+    #   id-token: write # Needed to detect the current reusable repository and ref.
     steps:
       - name: Detect the generator ref
         id: detect
