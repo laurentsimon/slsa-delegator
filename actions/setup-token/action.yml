@@ -64,7 +64,7 @@ runs:
         shell: bash
         working-directory: ./__BUILDER_CHECKOUT_DIR__/actions/setup-token
         env:
-          INPUTS: ${{ ssteps.inputs.outputs.inputs }}
+          INPUTS: ${{ steps.inputs.outputs.inputs }}
           TOOL_REPOSITORY: ${{ github.action_repository }}
           TOOL_REF: ${{ github.action_ref }}
         run: node ./dist/index.js
