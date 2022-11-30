@@ -65,7 +65,6 @@ runs:
           WORKFLOW_INPUTS: ${{ toJson(fromJson(inputs.slsa-workflow-inputs)) }}
         run: |
           echo "inputs=$INPUTS"
-          # "slsa-workflow-inputs": "{\n  \"release-tag\": \"v100\",\n  \"name1\": \"value1\",\n  \"name2\": \"value2\",\n  \"private-repository\": true\n}"
           echo "workflow-inputs=$WORKFLOW_INPUTS"
 
       # TODO: Action to create unsigned token
@@ -75,6 +74,9 @@ runs:
         working-directory: ./__BUILDER_CHECKOUT_DIR__/actions/setup-token
         env:
           ACTION_INPUTS: ${{ toJson(inputs) }}
+          # Note: We need to pass the argument sepaately, because GitHub automatically stringifies the
+          # argument and it contains `\n` and escape characters:
+          # "slsa-workflow-inputs": "{\n  \"release-tag\": \"v100\",\n  \"name1\": \"value1\",\n  \"name2\": \"value2\",\n  \"private-repository\": true\n}"
           WORKFLOW_INPUTS: ${{ toJson(fromJson(inputs.slsa-workflow-inputs)) }}
           TOOL_REPOSITORY: ${{ steps.detect.outputs.repository }}
           TOOL_REF: ${{ steps.detect.outputs.ref }}

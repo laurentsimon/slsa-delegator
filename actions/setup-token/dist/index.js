@@ -53,12 +53,18 @@ function run() {
               TOOL_REPOSITORY=laurentsimon/slsa-delegated-tool
               REF=main
             */
-            const envInputs = process.env.INPUTS;
+            const envInputs = process.env.ACTION_INPUTS;
             if (!envInputs) {
                 core.setFailed("No envInputs found.");
                 return;
             }
             core.info(`Found Action inputs: ${envInputs}`);
+            const workflowsInputs = process.env.WORKFLOW_INPUTS;
+            if (!workflowsInputs) {
+                core.setFailed("No workflowsInputs found.");
+                return;
+            }
+            core.info(`Found Workflow inputs: ${workflowsInputs}`);
             const inputsObj = JSON.parse(envInputs, function (key, value) {
                 const camelCaseKey = snakeToCamel(key);
                 // See https://stackoverflow.com/questions/68337817/is-it-possible-to-use-json-parse-to-change-the-keys-from-underscore-to-camelcase.
@@ -81,7 +87,9 @@ function run() {
             const privateRepository = inputsObj.slsaPrivateRepository;
             const runnerLabel = inputsObj.slsaRunnerLabel;
             const buildArtifactsActionPath = inputsObj.slsaBuildArtifactsActionPath;
-            const workflowInputs = inputsObj.slsaWorkflowInputs;
+            const tmpWorkflowInputs = inputsObj.slsaWorkflowInputs;
+            // The workflow inputs are a JSON object theselves.
+            const workflowInputs = JSON.parse(tmpWorkflowInputs);
             // Log for troubleshooting.
             const audience = "delegator_generic_slsa3.yml";
             core.info(`privateRepository: ${privateRepository}`);
