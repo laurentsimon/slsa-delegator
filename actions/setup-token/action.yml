@@ -50,6 +50,13 @@ runs:
         with:
           node-version: 16
 
+      # TODO: uses: slsa-framework/... detect-env@pin with pin verified as code freeze
+      - name: Detect the generator ref
+        id: detect
+        run: |
+          echo "URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
+          echo "repository=laurentsimon/slsa-delegated-tool" >> "$GITHUB_OUTPUT" 
+          echo "ref=main" >> "$GITHUB_OUTPUT"
       # - name: Prepare inputs
       #   id: inputs
       #   shell: bash
