@@ -65,7 +65,7 @@ runs:
           tree
           # echo $PATH
           # npm --help
-          nodejs ./dist/index.js
+          node ./dist/index.js
         
       - name: Debug
         shell: bash
