@@ -56,7 +56,7 @@ async function run(): Promise<void> {
     const workflowInputs = inputsObj.slsaWorkflowInputs
     
     // Log for troubleshooting.
-    const audience = "delegator_generic_slsa3.yml";//core.getInput("slsa-workflow-recipient")
+    const audience = "delegator_generic_slsa3.yml";
     core.info(`privateRepository: ${privateRepository}`);
     core.info(`runnerLabel: ${runnerLabel}`);
     core.info(`audience: ${audience}`);

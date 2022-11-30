@@ -59,13 +59,7 @@ runs:
           INPUTS: ${{ toJson(inputs) }}
           TOOL_REPOSITORY: ${{ github.action_repository }}
           TOOL_REF: ${{ github.action_ref }}
-        run: |
-          pwd
-          ls
-          tree
-          # echo $PATH
-          # npm --help
-          node ./dist/index.js
+        run: node ./dist/index.js
         
       - name: Debug
         shell: bash
