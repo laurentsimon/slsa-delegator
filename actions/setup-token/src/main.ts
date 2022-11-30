@@ -13,17 +13,21 @@ const snakeToCamel = (str:string) =>
 async function run(): Promise<void> {
   try {
     /* Test locally: 
-      export INPUTS="$(cat ./INPUTS.txt | jq -c)"
+      export ACTION_INPUTS="$(cat ./ACTION_INPUTS.txt | jq -c)"
+      export WORKFLOW_INPUTS="$(cat ./WORKFLOW_INPUTS.txt | jq -c)"
       TOOL_REPOSITORY=laurentsimon/slsa-delegated-tool
       REF=main
     */
-    const envInputs = process.env.ACTION_INPUTS;
-    if (!envInputs) {
-      core.setFailed("No envInputs found.");
+
+    // Read the Action inputs.
+    const actionInputs = process.env.ACTION_INPUTS;
+    if (!actionInputs) {
+      core.setFailed("No actionInputs found.");
       return;
     }
-    core.info(`Found Action inputs: ${envInputs}`)
+    core.info(`Found Action inputs: ${actionInputs}`)
 
+    // Read the Workflow inputs.
     const workflowsInputs = process.env.WORKFLOW_INPUTS;
     if (!workflowsInputs) {
       core.setFailed("No workflowsInputs found.");
@@ -31,16 +35,16 @@ async function run(): Promise<void> {
     }
     core.info(`Found Workflow inputs: ${workflowsInputs}`)
 
+    // Parse the Action inputs.
     interface inputsObj {
       slsaPrivateRepository: boolean;
       slsaRunnerLabel: string;
       slsaBuildArtifactsActionPath: string;
       slsaWorkflowRecipient: string;
       slsaWorkflowInputs: string;
-      //slsaWorkflowInputs: Map<string, string>;
     }
 
-    const inputsObj: inputsObj = JSON.parse(envInputs, function(key, value) {
+    const inputsObj: inputsObj = JSON.parse(actionInputs, function(key, value) {
       const camelCaseKey = snakeToCamel(key)
       // See https://stackoverflow.com/questions/68337817/is-it-possible-to-use-json-parse-to-change-the-keys-from-underscore-to-camelcase.
       if (this instanceof Array || camelCaseKey === key) {
@@ -54,23 +58,22 @@ async function run(): Promise<void> {
     // inputs.forEach((value, key) => {
     //   core.info(`${key}: ${value}`); 
     // });
-    // core.info("---")
     
     const toolRepository = process.env.TOOL_REPOSITORY
     const toolRef = process.env.TOOL_REF
-    const ref = core.getInput("ref");
+
+    const workflowRecipient = inputsObj.slsaWorkflowRecipient
     const privateRepository = inputsObj.slsaPrivateRepository;
     const runnerLabel = inputsObj.slsaRunnerLabel;
     const buildArtifactsActionPath = inputsObj.slsaBuildArtifactsActionPath;
     const tmpWorkflowInputs = inputsObj.slsaWorkflowInputs
-    // The workflow inputs are a JSON object theselves.
+    // The workflow inputs are represented as a JSON object theselves.
     const workflowInputs: Map<string, string> = JSON.parse(tmpWorkflowInputs)
     
-    // Log for troubleshooting.
-    const audience = "delegator_generic_slsa3.yml";
+    // Log the inputs for troubleshooting.
     core.info(`privateRepository: ${privateRepository}`);
     core.info(`runnerLabel: ${runnerLabel}`);
-    core.info(`audience: ${audience}`);
+    core.info(`workflowRecipient: ${workflowRecipient}`);
     core.info(`buildArtifactsActionPath: ${buildArtifactsActionPath}`);
     core.info(`workfowInputs:`);
     const workflowInputsMap = new Map(Object.entries(workflowInputs));
@@ -78,7 +81,7 @@ async function run(): Promise<void> {
       core.info(` ${key}: ${value}`); 
     });
 
-    
+    //
     const payload = JSON.stringify(github.context.payload, undefined, 2);
     core.info(`The event payload: ${payload}`);
 
@@ -88,6 +91,7 @@ async function run(): Promise<void> {
       "builder":{
         "private-repository": true,
         "runner-label": runnerLabel,
+        "audience": workflowRecipient
       },
       "tool":{
         "actions": {
@@ -96,7 +100,6 @@ async function run(): Promise<void> {
             }
         },
         "reusable-workflow":{
-          "path": audience,
           "repository": toolRepository,
           "ref": toolRef
         },

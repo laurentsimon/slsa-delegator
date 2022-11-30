@@ -3,5 +3,5 @@
   "slsa-private-repository": "true",
   "slsa-runner-label": "ubuntu-latest",
   "slsa-build-artifacts-action-path": "./actions/build-artifacts-composite",
-  "slsa-workflow-inputs": "{\n  \"release-tag\": \"v100\",\n  \"name1\": \"value1\",\n  \"name2\": \"value2\",\n  \"private-repository\": true\n}"
+  "slsa-workflow-inputs": "{\n  \"name1\": \"value1\",\n  \"name2\": \"value2\",\n  \"private-repository\": true\n}"
 }
