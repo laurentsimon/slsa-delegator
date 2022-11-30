@@ -55,7 +55,6 @@ runs:
         id: detect
         shell: bash
         run: |
-          echo "URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
           echo "repository=laurentsimon/slsa-delegated-tool" >> "$GITHUB_OUTPUT" 
           echo "ref=main" >> "$GITHUB_OUTPUT"
       
@@ -73,8 +72,8 @@ runs:
         working-directory: ./__BUILDER_CHECKOUT_DIR__/actions/setup-token
         env:
           INPUTS: ${{ toJson(inputs) }}
-          TOOL_REPOSITORY: ${{ github.action_repository }}
-          TOOL_REF: ${{ github.action_ref }}
+          TOOL_REPOSITORY: ${{ steps.detect.outputs.repository }}
+          TOOL_REF: ${{ steps.detect.outputs.ref }}
         run: node ./dist/index.js
         
       - name: Debug
