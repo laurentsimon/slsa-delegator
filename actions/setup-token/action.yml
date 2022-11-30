@@ -63,8 +63,8 @@ runs:
           pwd
           ls
           tree
-          tree /opt/hostedtoolcache/node/16.18.1/x64/
           echo $PATH
+          npm --help
           nodejs ./dist/index.js
         
       - name: Debug
