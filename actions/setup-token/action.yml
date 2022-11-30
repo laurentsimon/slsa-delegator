@@ -50,6 +50,7 @@ runs:
         with:
           node-version: 16
 
+      # TODO: Action to create unsigned token
       - name: Generate unsigned token
         id: generate
         shell: bash
@@ -62,7 +63,8 @@ runs:
           pwd
           ls
           tree
-          npm --help
+          tree /opt/hostedtoolcache/node/16.18.1/x64/
+          echo $PATH
           nodejs ./dist/index.js
         
       - name: Debug
