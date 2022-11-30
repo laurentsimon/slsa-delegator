@@ -38,78 +38,94 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Generate a token
-      id: generate
-      shell: bash
-      env:
-        SLSA_INPUTS: ${{ toJson(inputs.slsa-workflow-inputs) }}
-        SLSA_RUNNER_LABEL: ${{ inputs.slsa-runner-label }}
-        SLSA_PRIVATE_REPOSITORY: ${{ inputs.slsa-private-repository }}
-        SLSA_ACTION_PATH: ${{ inputs.slsa-build-artifacts-action-path }}
-        SLSA_RECIPIENT: ${{ inputs.slsa-workflow-recipient }}
-      run: |
-          # TODO: call the Action to generate and sign the token.
-          echo "inputs: $SLSA_INPUTS"
-          echo "runner: $SLSA_RUNNER_LABEL"
-          echo "private: $SLSA_PRIVATE_REPOSITORY"
-          echo "path: $SLSA_ACTION_PATH"
-          cat <<EOF >DATA
-          {
-            "version": 1,
-            "builder":{
-              "private-repository": true,
-              "runner-label": "ubuntu-latest"
-            },
-            "tool":{
-              "actions": {
-                "build-artifacts":{
-                  "path": "./actions/build-artifacts-composite"
-                  }
-              },
-              "reusable-workflow":{
-                "path": ".github/workflows/tool1_slsa3.yml",
-                "repository": "laurentsimon/slsa-delegated-tool",
-                "ref": "main"
-              },
-              "inputs":{
-                "name1": "value1",
-                "name2": "value2"
-              }
-            }
-          }
-          EOF
-          echo "token:"
-          cat DATA
-          cat DATA | base64 -w0
-          echo "slsa-token=$(cat DATA | base64 -w0)" >> "$GITHUB_OUTPUT"
-
-    - name: Checkout the builder
-      # This pin must be added to the release freezze reference pre-submits.
-      uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
-      with:
-        # These are always the same as the pin above.
-        repository: ${{ github.action_repository }}
-        ref: ${{ github.action_ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Generate unsigned token
+        id: generate
+        shell: bash
+        env:
+          INPUTS: ${{ toJson(inputs) }}
+          TOOL_REPOSITORY: laurentsimon/slsa-delegated-tool
+          TOOL_REF: main
+        run: |
+          # TODO: call the compiled version in dist/index.js
+          npm ci
+          nodejs ./lib/main.js
+      
+      - name: Checkout the builder
+        # This pin must be added to the release freeze reference pre-submits.
+        uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
+        with:
+          # These are always the same as the pin above.
+          repository: ${{ github.action_repository }}
+          ref: ${{ github.action_ref }}
         
-    - name: Debug
-      shell: bash
-      env:
-        REPO: ${{ github.action_repository }}
-        REF: ${{ github.action_ref }}
-      run: |
-        echo "repo: $REPO"
-        echo "ref: $REF"
+      - name: Debug
+        shell: bash
+        env:
+          REPO: ${{ github.action_repository }}
+          REF: ${{ github.action_ref }}
+        run: |
+          echo "repo: $REPO"
+          echo "ref: $REF"
 
-        pwd
-        ls
-        tree
+          pwd
+          ls
+          tree
 
-        echo "token: ${{ steps.generate.outputs.slsa-token }}"
-        echo "recipient: ${{ inputs.slsa-workflow-recipient }}"
+          echo "token: ${{ steps.generate.outputs.base64-slsa-token }}"
+          echo "recipient: ${{ inputs.slsa-workflow-recipient }}"
 
-    - name: Sign the token
-      id: sign
-      uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
-      with:
-        slsa-raw-token: ${{ steps.generate.outputs.slsa-token }}
-        slsa-token-recipient: ${{ inputs.slsa-workflow-recipient }}
+      - name: Sign the token
+        id: sign
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
+        with:
+          slsa-raw-token: ${{ steps.generate.outputs.base64-slsa-token }}
+          slsa-token-recipient: ${{ inputs.slsa-workflow-recipient }}
+
+#     - name: Generate a token
+#       id: generate
+#       shell: bash
+#       env:
+#         SLSA_INPUTS: ${{ toJson(inputs.slsa-workflow-inputs) }}
+#         SLSA_RUNNER_LABEL: ${{ inputs.slsa-runner-label }}
+#         SLSA_PRIVATE_REPOSITORY: ${{ inputs.slsa-private-repository }}
+#         SLSA_ACTION_PATH: ${{ inputs.slsa-build-artifacts-action-path }}
+#         SLSA_RECIPIENT: ${{ inputs.slsa-workflow-recipient }}
+#       run: |
+#           # TODO: call the Action to generate and sign the token.
+#           echo "inputs: $SLSA_INPUTS"
+#           echo "runner: $SLSA_RUNNER_LABEL"
+#           echo "private: $SLSA_PRIVATE_REPOSITORY"
+#           echo "path: $SLSA_ACTION_PATH"
+#           cat <<EOF >DATA
+#           {
+#             "version": 1,
+#             "builder":{
+#               "private-repository": true,
+#               "runner-label": "ubuntu-latest"
+#             },
+#             "tool":{
+#               "actions": {
+#                 "build-artifacts":{
+#                   "path": "./actions/build-artifacts-composite"
+#                   }
+#               },
+#               "reusable-workflow":{
+#                 "path": ".github/workflows/tool1_slsa3.yml",
+#                 "repository": "laurentsimon/slsa-delegated-tool",
+#                 "ref": "main"
+#               },
+#               "inputs":{
+#                 "name1": "value1",
+#                 "name2": "value2"
+#               }
+#             }
+#           }
+#           EOF
+#           echo "token:"
+#           cat DATA
+#           cat DATA | base64 -w0
+#           echo "slsa-token=$(cat DATA | base64 -w0)" >> "$GITHUB_OUTPUT"
+
