@@ -58,13 +58,13 @@ runs:
           echo "URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
           echo "repository=laurentsimon/slsa-delegated-tool" >> "$GITHUB_OUTPUT" 
           echo "ref=main" >> "$GITHUB_OUTPUT"
-      # - name: Prepare inputs
-      #   id: inputs
-      #   shell: bash
-      #   env:
-      #     INPUTS: ${{ toJson(inputs) }}
-      #   run: |
-      #     echo "inputs=$(echo "$INPUTS" | jq -c)" >> "$GITHUB_OUTPUT"
+      
+      - name: Debug
+        shell: bash
+        env:
+          INPUTS: ${{ toJson(inputs) }}
+        run: |
+          echo "inputs=$INPUTS"
 
       # TODO: Action to create unsigned token
       - name: Generate unsigned token
