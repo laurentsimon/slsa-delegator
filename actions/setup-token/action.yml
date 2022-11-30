@@ -53,6 +53,7 @@ runs:
       - name: Generate unsigned token
         id: generate
         shell: bash
+        working-directory: ./__BUILDER_CHECKOUT_DIR__/actions/setup-token
         env:
           INPUTS: ${{ toJson(inputs) }}
           TOOL_REPOSITORY: ${{ github.action_repository }}
@@ -61,7 +62,8 @@ runs:
           pwd
           ls
           tree
-          nodejs ./__BUILDER_CHECKOUT_DIR__/actions/setup-token/dist/index.js
+          npm --help
+          nodejs ./dist/index.js
         
       - name: Debug
         shell: bash
