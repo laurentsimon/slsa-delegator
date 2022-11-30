@@ -55,8 +55,8 @@ runs:
         shell: bash
         env:
           INPUTS: ${{ toJson(inputs) }}
-          TOOL_REPOSITORY: laurentsimon/slsa-delegated-tool
-          TOOL_REF: main
+          TOOL_REPOSITORY: ${{ github.action_repository }}
+          TOOL_REF: ${{ github.action_ref }}
         run: |
           pwd
           ls
