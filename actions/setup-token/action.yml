@@ -62,8 +62,10 @@ runs:
         shell: bash
         env:
           INPUTS: ${{ toJson(inputs) }}
+          WORKFLOW_INPUTS: ${{ toJson(fromJson(inputs.slsa-workflow-inputs)) }}
         run: |
           echo "inputs=$INPUTS"
+          echo "workflow-inputs=$WORKFLOW_INPUTS"
 
       # TODO: Action to create unsigned token
       - name: Generate unsigned token
