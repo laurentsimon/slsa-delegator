@@ -63,8 +63,8 @@ runs:
           pwd
           ls
           tree
-          echo $PATH
-          npm --help
+          # echo $PATH
+          # npm --help
           nodejs ./dist/index.js
         
       - name: Debug
