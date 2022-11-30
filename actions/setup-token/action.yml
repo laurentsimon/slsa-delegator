@@ -41,6 +41,7 @@ runs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
+
       - name: Generate unsigned token
         id: generate
         shell: bash
@@ -49,9 +50,7 @@ runs:
           TOOL_REPOSITORY: laurentsimon/slsa-delegated-tool
           TOOL_REF: main
         run: |
-          # TODO: call the compiled version in dist/index.js
-          npm ci
-          nodejs ./lib/main.js
+          nodejs ./dist/index.js
       
       - name: Checkout the builder
         # This pin must be added to the release freeze reference pre-submits.
