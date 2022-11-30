@@ -59,7 +59,9 @@ runs:
           TOOL_REF: main
         run: |
           pwd
-          ls tree
+          ls
+          tree
+          which nodejs
           nodejs ./__BUILDER_CHECKOUT_DIR__/actions/setup-token/dist/index.js
         
       - name: Debug
