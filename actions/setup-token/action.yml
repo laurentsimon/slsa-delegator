@@ -50,13 +50,21 @@ runs:
         with:
           node-version: 16
 
+      - name: Prepare inputs
+        id: inputs
+        shell: bash
+        env:
+          INPUTS: ${{ toJson(inputs) }}
+        run: |
+          echo "inputs=$(echo "$INPUTS" | jq -c)" >> "$GITHUB_OUTPUT"
+
       # TODO: Action to create unsigned token
       - name: Generate unsigned token
         id: generate
         shell: bash
         working-directory: ./__BUILDER_CHECKOUT_DIR__/actions/setup-token
         env:
-          INPUTS: ${{ toJson(inputs) }}
+          INPUTS: ${{ ssteps.inputs.outputs.inputs }}
           TOOL_REPOSITORY: ${{ github.action_repository }}
           TOOL_REF: ${{ github.action_ref }}
         run: node ./dist/index.js
