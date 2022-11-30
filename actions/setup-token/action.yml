@@ -61,7 +61,6 @@ runs:
           pwd
           ls
           tree
-          which nodejs
           nodejs ./__BUILDER_CHECKOUT_DIR__/actions/setup-token/dist/index.js
         
       - name: Debug
