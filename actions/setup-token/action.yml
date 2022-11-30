@@ -38,6 +38,14 @@ outputs:
 runs:
   using: 'composite'
   steps:
+      - name: Checkout the builder
+        # This pin must be added to the release freeze reference pre-submits.
+        uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
+        with:
+          # These are always the same as the pin above.
+          repository: ${{ github.action_repository }}
+          ref: ${{ github.action_ref }}
+
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -50,15 +58,9 @@ runs:
           TOOL_REPOSITORY: laurentsimon/slsa-delegated-tool
           TOOL_REF: main
         run: |
-          nodejs ./dist/index.js
-      
-      - name: Checkout the builder
-        # This pin must be added to the release freeze reference pre-submits.
-        uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
-        with:
-          # These are always the same as the pin above.
-          repository: ${{ github.action_repository }}
-          ref: ${{ github.action_ref }}
+          pwd
+          ls tree
+          nodejs ./__BUILDER_CHECKOUT_DIR__/actions/setup-token/dist/index.js
         
       - name: Debug
         shell: bash
