@@ -13,6 +13,9 @@
     "all": "npm ci && npm run format && npm run lint && npm run build && npm run package",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "setup-token": "bin/setup-token.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
