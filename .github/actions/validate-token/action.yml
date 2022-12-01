@@ -56,7 +56,7 @@ runs:
           ./bin/sigstore.js verify signature.txt raw_token.txt
 
           # Extract the certificate PEM
-          cat signature.txt | base64 -d | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
+          cat signature.txt | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
           cat cert.der.base64
           
           # TODO: Check certificate properties? We can match the tool.reusable-workflow
