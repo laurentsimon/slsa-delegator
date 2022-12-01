@@ -30,6 +30,14 @@ inputs:
     type: string
     required: true
 
+  # Note: will not be recorded.
+  # It is ignored in the Action.
+  # slsa-github-token:
+  #   description: 'The GitHub token'
+  #   type: string
+  #   required: false
+  #   default: ${{ github.token }}
+
 outputs:
   slsa-token:
     description: "slsa token"

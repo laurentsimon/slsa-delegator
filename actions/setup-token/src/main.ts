@@ -94,6 +94,9 @@ async function run(): Promise<void> {
         "runner-label": runnerLabel,
         audience: workflowRecipient,
       },
+      github: {
+        context: github.context
+      },
       tool: {
         actions: {
           "build-artifacts": {
