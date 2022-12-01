@@ -80,7 +80,7 @@ runs:
           WORKFLOW_INPUTS: ${{ toJson(fromJson(inputs.slsa-workflow-inputs)) }}
           TOOL_REPOSITORY: ${{ steps.detect.outputs.repository }}
           TOOL_REF: ${{ steps.detect.outputs.ref }}
-        run: node ./dist/index.js
+        run: node16 ./dist/index.js
         
       - name: Debug
         shell: bash
