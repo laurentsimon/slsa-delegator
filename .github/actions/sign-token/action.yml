@@ -3,13 +3,6 @@ name: sign token
 description: 'sign token'
 
 inputs:
-
-  # Audience.
-  slsa-token-recipient:
-    description: 'the audience of the token'
-    type: string
-    required: true
-
   slsa-raw-token:
     description: 'the raw token to sign'
     type: string
@@ -23,13 +16,42 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Checkout the builder
+      # This pin must be added to the release freeze reference pre-submits.
+      uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
+      with:
+        # These are always the same as the pin above.
+        repository: "sigstore/sigstore-js"
+        ref: "main"
+
+    # TODO: pin
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
     - name: Sign a token
       id: sign
       shell: bash
       env:
-        SLSA_AUDIENCE: ${{ inputs.slsa-token-recipient }}
         SLSA_RAW_TOKEN: ${{ inputs.slsa-raw-token }}
       run: |
-          echo "audience: $SLSA_AUDIENCE"
-          echo "token: $SLSA_RAW_TOKEN"
-          echo "slsa-signed-token=SIGNED.$SLSA_RAW_TOKEN" >> "$GITHUB_OUTPUT"
+        # Note: they will enevtually package eveything up in a single file.
+        npm ci && npm run build
+        node ./bin/sigstore.js sign-dsse "$SLSA_RAW_TOKEN" "text/plain" > bundle.sigstore
+        signature=$(cat bundle.sigstore | base64 -w0)
+        signed_token=$signature.$SLSA_RAW_TOKEN
+        echo "raw-token: $SLSA_RAW_TOKEN"
+        echo "signature: $signature"
+        echo "signed-token: $signed_token"
+        echo "slsa-signed-token=$signed_token" >> "$GITHUB_OUTPUT"
+
+    # - name: Sign a token
+    #   id: sign
+    #   shell: bash
+    #   env:
+    #     SLSA_AUDIENCE: ${{ inputs.slsa-token-recipient }}
+    #     SLSA_RAW_TOKEN: ${{ inputs.slsa-raw-token }}
+    #   run: |
+    #       echo "audience: $SLSA_AUDIENCE"
+    #       echo "token: $SLSA_RAW_TOKEN"
+    #       echo "slsa-signed-token=SIGNED.$SLSA_RAW_TOKEN" >> "$GITHUB_OUTPUT"

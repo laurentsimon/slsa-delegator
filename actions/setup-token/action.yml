@@ -46,6 +46,7 @@ runs:
           repository: ${{ github.action_repository }}
           ref: ${{ github.action_ref }}
 
+      # TODO: pin
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -80,7 +81,7 @@ runs:
           WORKFLOW_INPUTS: ${{ toJson(fromJson(inputs.slsa-workflow-inputs)) }}
           TOOL_REPOSITORY: ${{ steps.detect.outputs.repository }}
           TOOL_REF: ${{ steps.detect.outputs.ref }}
-        run: node16 ./dist/index.js
+        run: node ./dist/index.js
         
       - name: Debug
         shell: bash
@@ -103,7 +104,6 @@ runs:
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
         with:
           slsa-raw-token: ${{ steps.generate.outputs.base64-slsa-token }}
-          slsa-token-recipient: ${{ inputs.slsa-workflow-recipient }}
 
 #     - name: Generate a token
 #       id: generate
