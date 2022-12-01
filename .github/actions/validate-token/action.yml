@@ -44,11 +44,15 @@ runs:
         SLSA_TOKEN: ${{ inputs.slsa-token }}
       run: |
           # TODO: enable errors
-
+          echo "token: $SLSA_TOKEN"
           # 1. Verify signature.
           npm ci && npm run build
           echo $SLSA_TOKEN| cut -d '.' -f2 > raw_token.txt
           echo $SLSA_TOKEN| cut -d '.' -f1 > signature.txt
+          echo "raw:"
+          cat raw_token.txt
+          echo "signature:"
+          cat signature.txt
           ./bin/sigstore.js verify signature.txt raw_token.txt
 
           # 2. Validate the audience.
