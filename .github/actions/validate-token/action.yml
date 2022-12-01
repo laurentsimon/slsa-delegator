@@ -64,7 +64,6 @@ runs:
 
           # Extract GitHub context from token
           run_id=$(cat raw_token.txt | base64 -d | jq -r '.github.context.runId')
-          repository
 
           # Extract audience from token
           audience=$(cat raw_token.txt | base64 -d | jq -r '.builder.audience')
