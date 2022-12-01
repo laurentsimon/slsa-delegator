@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require('../dist/index.js').processArgv();
+require('../dist/index.js');
