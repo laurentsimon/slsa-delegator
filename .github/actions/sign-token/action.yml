@@ -23,7 +23,7 @@ runs:
         # These are always the same as the pin above.
         repository: "sigstore/sigstore-js"
         ref: "v0.1.0"
-        path: "."
+    - run: mv __BUILDER_CHECKOUT_DIR__ /tmp/__BUILDER_CHECKOUT_DIR__
 
     # TODO: pin
     - uses: actions/setup-node@v3
@@ -39,6 +39,7 @@ runs:
     - name: Sign a token
       id: sign
       shell: bash
+      working-directory: /tmp/__BUILDER_CHECKOUT_DIR__
       env:
         SLSA_RAW_TOKEN: ${{ inputs.slsa-raw-token }}
       run: |

@@ -130,6 +130,7 @@ jobs:
           path: __BUILDER_CHECKOUT_DIR__
       - run: mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
+      # TODO: when updating folder's name: keep in mind that npm's typescript compiler complains if the names are too long: workspace/__BUILDER_CHECKOUT_DIR__
       - name: Checkout the tool
         # TODO: use a secure tool checkout.
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
