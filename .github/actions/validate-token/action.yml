@@ -21,15 +21,42 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    using: 'composite'
+  steps:
+    - name: Checkout the builder
+      # This pin must be added to the release freeze reference pre-submits.
+      uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
+      with:
+        # These are always the same as the pin above.
+        repository: "sigstore/sigstore-js"
+        ref: "v0.1.0"
+        path: __SIGSTORE_CHECKOUT_DIR__
+
+    # TODO: pin the action.
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
     - name: Validate a token
       id: validate
       shell: bash
+      working-directory: __SIGSTORE_CHECKOUT_DIR__
       env:
         SLSA_AUDIENCE: ${{ inputs.slsa-workflow-recipient }}
         SLSA_TOKEN: ${{ inputs.slsa-token }}
       run: |
-          echo "audience: $SLSA_AUDIENCE"
-          echo "token: $SLSA_TOKEN"
-          validated_token="$(echo $SLSA_TOKEN| cut -d '.' -f2 | base64 -d | jq -c .)"
+          # TODO: enable errors
+
+          # 1. Verify signature.
+          npm ci && npm run build
+          echo $SLSA_TOKEN| cut -d '.' -f2 > raw_token.txt
+          echo $SLSA_TOKEN| cut -d '.' -f1 > signature.txt
+          ./bin/sigstore.js verify signature.txt raw_token.txt
+
+          # 2. Validate the audience.
+          # 3. Validate the GitHub context, which contains run ID, repository names, etc.
+          
+          # 4. Output the verified token.
+          validated_token="$(raw_token.txt | base64 -d | jq -c .)"
           echo "validated-token: $validated_token"
           echo "slsa-validated-token=$validated_token" >> "$GITHUB_OUTPUT"
