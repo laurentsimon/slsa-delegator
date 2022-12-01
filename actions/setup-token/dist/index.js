@@ -41,10 +41,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
-const snakeToCamel = (str) => str.toLowerCase().replace(/([-_][a-z])/g, group => group
-    .toUpperCase()
-    .replace('-', '')
-    .replace('_', ''));
+const snakeToCamel = (str) => str
+    .toLowerCase()
+    .replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace("-", "").replace("_", ""));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -81,7 +80,7 @@ function run() {
             /* test*/
             // const inputs = new Map(Object.entries(inputsObj));
             // inputs.forEach((value, key) => {
-            //   core.info(`${key}: ${value}`); 
+            //   core.info(`${key}: ${value}`);
             // });
             const toolRepository = process.env.TOOL_REPOSITORY;
             const toolRef = process.env.TOOL_REF;
@@ -107,24 +106,24 @@ function run() {
             core.info(`The event payload: ${payload}`);
             // Construct our raw token.
             const rawSlsaToken = {
-                "version": 1,
-                "builder": {
+                version: 1,
+                builder: {
                     "private-repository": true,
                     "runner-label": runnerLabel,
-                    "audience": workflowRecipient
+                    audience: workflowRecipient,
                 },
-                "tool": {
-                    "actions": {
+                tool: {
+                    actions: {
                         "build-artifacts": {
-                            "path": buildArtifactsActionPath
-                        }
+                            path: buildArtifactsActionPath,
+                        },
                     },
                     "reusable-workflow": {
-                        "repository": toolRepository,
-                        "ref": toolRef
+                        repository: toolRepository,
+                        ref: toolRef,
                     },
-                    "inputs": workflowInputs
-                }
+                    inputs: workflowInputs,
+                },
             };
             const token = JSON.stringify(rawSlsaToken, undefined);
             core.info(`Raw SLSA token: ${token}`);

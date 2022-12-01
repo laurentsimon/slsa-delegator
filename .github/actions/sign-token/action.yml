@@ -40,7 +40,6 @@ runs:
         # Note: they will eventually package eveything up in a single file or as a package (?)
         npm ci && npm run build
         echo "$SLSA_RAW_TOKEN" > raw_token.txt
-        chmod u+x ./bin/sigstore.js
         ./bin/sigstore.js sign-dsse raw_token.txt "text/plain" > bundle.sigstore
         signature=$(cat bundle.sigstore | base64 -w0)
         signed_token=$signature.$SLSA_RAW_TOKEN
