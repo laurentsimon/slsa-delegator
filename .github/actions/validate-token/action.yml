@@ -21,8 +21,6 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    using: 'composite'
-  steps:
     - name: Checkout the builder
       # This pin must be added to the release freeze reference pre-submits.
       uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
@@ -55,6 +53,7 @@ runs:
 
           # 2. Validate the audience.
           # 3. Validate the GitHub context, which contains run ID, repository names, etc.
+          # We need to unmarshal the output and perform a deep compare.
           
           # 4. Output the verified token.
           validated_token="$(raw_token.txt | base64 -d | jq -c .)"
