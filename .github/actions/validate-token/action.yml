@@ -42,6 +42,7 @@ runs:
       env:
         SLSA_AUDIENCE: ${{ inputs.slsa-workflow-recipient }}
         SLSA_TOKEN: ${{ inputs.slsa-token }}
+        GITHUB_CONTEXT: ${{ toJson(github) }}
       run: |
           # TODO: enable errors
           echo "token: $SLSA_TOKEN"
