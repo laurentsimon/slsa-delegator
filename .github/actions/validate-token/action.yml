@@ -55,9 +55,29 @@ runs:
           cat signature.txt
           ./bin/sigstore.js verify signature.txt raw_token.txt
 
-          # 2. Validate the audience.
+          # Extract the certificate PEM
+          echo signature.txt | base64 -d | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' | base64 -d | openssl x509 -text > cert.pem
+          cat cert.pem
+          # TODO: Check certificate properties? We can match the tool.reusable-workflow
+          # repository and ref with the certificate SAN and branch.
+
+          # Extract GitHub context from token
+          run_id=$(echo raw_token.txt | base64 -d | jq -r '.github.context.runId')
+          repository
+
+          # Extract audience from token
+          audience=$(echo raw_token.txt | base64 -d | jq -r '.builder.audience')
+
+          # 2. Validate the audience matches the intended SLSA workflow receipient
+          if [ "$audience" != "$SLSA_AUDIENCE" ]; then
+            echo "Expected SLSA audience $SLSA_AUDIENCE, recieved $audience"
+            exit 1
+          fi
+
           # 3. Validate the GitHub context, which contains run ID, repository names, etc.
           # We need to unmarshal the output and perform a deep compare.
+          echo "github context:"
+          echo ${GITHUB_CONTEXT} | jq -r
           
           # 4. Output the verified token.
           validated_token="$(cat raw_token.txt | base64 -d | jq -c .)"
