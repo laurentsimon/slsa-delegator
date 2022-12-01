@@ -24,6 +24,7 @@ runs:
         repository: "sigstore/sigstore-js"
         ref: "v0.1.0"
     - run: mv __BUILDER_CHECKOUT_DIR__ /tmp/__BUILDER_CHECKOUT_DIR__
+      shell: bash
 
     # TODO: pin
     - uses: actions/setup-node@v3
