@@ -81,9 +81,7 @@ runs:
           WORKFLOW_INPUTS: ${{ toJson(fromJson(inputs.slsa-workflow-inputs)) }}
           TOOL_REPOSITORY: ${{ steps.detect.outputs.repository }}
           TOOL_REF: ${{ steps.detect.outputs.ref }}
-        run: |
-          chmod u+x ./dist/index.js
-          ./dist/index.js
+        run: ./bin/setup-token.js
         
       - name: Debug
         shell: bash
