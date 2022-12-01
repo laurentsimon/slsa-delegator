@@ -60,6 +60,6 @@ runs:
           # We need to unmarshal the output and perform a deep compare.
           
           # 4. Output the verified token.
-          validated_token="$(raw_token.txt | base64 -d | jq -c .)"
+          validated_token="$(cat raw_token.txt | base64 -d | jq -c .)"
           echo "validated-token: $validated_token"
           echo "slsa-validated-token=$validated_token" >> "$GITHUB_OUTPUT"
