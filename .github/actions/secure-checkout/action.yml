@@ -13,6 +13,12 @@ inputs:
     type: string
     required: true
 
+  path:
+    description: 'path'
+    type: string
+    required: false
+    default: __BUILDER_CHECKOUT_DIR__
+
 runs:
   using: 'composite'
   steps:
@@ -27,4 +33,4 @@ runs:
         # Faster runtime but more maintenance.
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
-        path: __BUILDER_CHECKOUT_DIR__
+        path: ${{ inputs.path }}

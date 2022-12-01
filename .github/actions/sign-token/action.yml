@@ -23,6 +23,7 @@ runs:
         # These are always the same as the pin above.
         repository: "sigstore/sigstore-js"
         ref: "v0.1.0"
+        path: "."
 
     # TODO: pin
     - uses: actions/setup-node@v3
@@ -43,7 +44,7 @@ runs:
       env:
         SLSA_RAW_TOKEN: ${{ inputs.slsa-raw-token }}
       run: |
-        # Note: they will enevtually package eveything up in a single file.
+        # Note: they will eventually package eveything up in a single file or as a package (?)
         npm ci && npm run build
         node ./bin/sigstore.js sign-dsse "$SLSA_RAW_TOKEN" "text/plain" > bundle.sigstore
         signature=$(cat bundle.sigstore | base64 -w0)
