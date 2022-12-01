@@ -112,6 +112,9 @@ function run() {
                     "runner-label": runnerLabel,
                     audience: workflowRecipient,
                 },
+                github: {
+                    context: github.context
+                },
                 tool: {
                     actions: {
                         "build-artifacts": {
