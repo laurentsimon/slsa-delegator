@@ -60,9 +60,6 @@ async function run(): Promise<void> {
     //   core.info(`${key}: ${value}`);
     // });
 
-    const toolRepository = process.env.TOOL_REPOSITORY;
-    const toolRef = process.env.TOOL_REF;
-
     const workflowRecipient = inputsObj.slsaWorkflowRecipient;
     const privateRepository = inputsObj.slsaPrivateRepository;
     const runnerLabel = inputsObj.slsaRunnerLabel;
@@ -103,9 +100,12 @@ async function run(): Promise<void> {
             path: buildArtifactsActionPath,
           },
         },
+        // WARNING: We shoud remove this:
+        // it's the validator's role to extract the
+        // repo / ref and add it to the token.
         "reusable-workflow": {
-          repository: toolRepository,
-          ref: toolRef,
+          repository: "laurentsimon/slsa-delegated-tool",
+          ref: "main",
         },
         inputs: workflowInputs,
       },

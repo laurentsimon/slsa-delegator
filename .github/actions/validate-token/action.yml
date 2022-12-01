@@ -54,6 +54,9 @@ runs:
           cat raw_token.txt
           echo "signature:"
           cat signature.txt
+          # ******* WARNING ***********
+          # We MUST verify the identity from the cert and extract
+          # the repo name and the ref and add it to the token.
           ./bin/sigstore.js verify signature.txt raw_token.txt
 
           # Extract the certificate PEM

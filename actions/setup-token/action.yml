@@ -87,8 +87,6 @@ runs:
           # argument and it contains `\n` and escape characters:
           # "slsa-workflow-inputs": "{\n  \"release-tag\": \"v100\",\n  \"name1\": \"value1\",\n  \"name2\": \"value2\",\n  \"private-repository\": true\n}"
           WORKFLOW_INPUTS: ${{ toJson(fromJson(inputs.slsa-workflow-inputs)) }}
-          TOOL_REPOSITORY: ${{ steps.detect.outputs.repository }}
-          TOOL_REF: ${{ steps.detect.outputs.ref }}
         run: ./bin/setup-token.js
         
       - name: Debug
