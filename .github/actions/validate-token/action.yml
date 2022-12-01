@@ -56,18 +56,18 @@ runs:
           ./bin/sigstore.js verify signature.txt raw_token.txt
 
           # Extract the certificate PEM
-          echo signature.txt | base64 -d | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
+          cat signature.txt | base64 -d | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
           cat cert.der.base64
           
           # TODO: Check certificate properties? We can match the tool.reusable-workflow
           # repository and ref with the certificate SAN and branch.
 
           # Extract GitHub context from token
-          run_id=$(echo raw_token.txt | base64 -d | jq -r '.github.context.runId')
+          run_id=$(cat raw_token.txt | base64 -d | jq -r '.github.context.runId')
           repository
 
           # Extract audience from token
-          audience=$(echo raw_token.txt | base64 -d | jq -r '.builder.audience')
+          audience=$(cat raw_token.txt | base64 -d | jq -r '.builder.audience')
 
           # 2. Validate the audience matches the intended SLSA workflow receipient
           if [ "$audience" != "$SLSA_AUDIENCE" ]; then
