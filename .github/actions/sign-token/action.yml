@@ -38,6 +38,8 @@ runs:
     - name: Sign a token
       id: sign
       shell: bash
+      # Note: this shold be removed once we use a secure-checkout with the directory not hardcoded.
+      workinf-directory: __BUILDER_CHECKOUT_DIR__
       env:
         SLSA_RAW_TOKEN: ${{ inputs.slsa-raw-token }}
       run: |
