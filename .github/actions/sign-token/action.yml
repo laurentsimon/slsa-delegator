@@ -22,12 +22,18 @@ runs:
       with:
         # These are always the same as the pin above.
         repository: "sigstore/sigstore-js"
-        ref: "main"
+        ref: "v0.1.0"
 
     # TODO: pin
     - uses: actions/setup-node@v3
       with:
         node-version: 16
+
+    - name: Debug
+      shell: bash
+      run: |
+        pwd
+        tree
 
     - name: Sign a token
       id: sign
