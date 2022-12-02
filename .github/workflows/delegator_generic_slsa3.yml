@@ -201,7 +201,7 @@ jobs:
         id: build-artifacts-action
         env:
           # TODO: if saved in file, this implies the Action is *not* a docker-based Action.
-          SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ github.workspace }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
           # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
