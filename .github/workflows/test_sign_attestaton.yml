@@ -1,0 +1,24 @@
+name: Test Sign Attestation
+
+on: 
+  - workflow_dispatch
+
+jobs:
+  test_sign_attestation:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create attestation
+        run: |
+          echo "Hello, world!" >> attestation.txt
+      - name: Test sign attestation
+        id: sign
+        uses: asraa/slsa-delegator/.github/actions/sign-attestation@main
+        with:
+          attestation: attestation.txt
+          payload_type: 'text/plain'
+      - name: Output
+        run: |
+          cat attestation.txt.jsonl | jq
