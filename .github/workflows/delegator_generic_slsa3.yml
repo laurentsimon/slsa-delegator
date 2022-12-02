@@ -232,7 +232,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: ${{ env.SLSA_ARTIFACTS_FILE }}-XXXX
-
       # TODO: makes this an Action.
       # - name: TODO + checkout repo
       #   uses: bla/bla
