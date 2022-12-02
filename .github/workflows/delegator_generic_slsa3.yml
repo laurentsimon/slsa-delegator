@@ -103,7 +103,7 @@ jobs:
     if: fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label == 'ubuntu-latest'
     outputs:
       outputs: ${{ toJson(steps.build-artifacts-action.outputs) }}
-      outputs-filename-sha256: ${{ steps.upload.outputs.output-filename-sha256 }}
+      outputs-filename-sha256: ${{ steps.upload.outputs.outputs-filename-sha256 }}
     runs-on: ubuntu-latest
     # TODO: privacy-check, detect-env
     needs: [detect-env, validate-token]
@@ -227,7 +227,7 @@ jobs:
   generate-provenance:
     needs: [validate-token, build-artifacts-ubuntu]
     outputs:
-      attestations-download-name: "slsa-attestations-random-number"
+      attestations-download-name: "slsa-attestations-XXXX"
     runs-on: ubuntu-latest
     steps:
       # TODO: secure download using ${{ needs.build-artifacts-ubuntu.outputs.outputs-filename-sha256 }}
@@ -249,20 +249,22 @@ jobs:
         env:
           SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
           BUILD_ARTIFACTS_OUTPUTS: ${{ needs.build-artifacts-ubuntu.outputs.outputs }}
-          BUILD_ARTIFACTS_OUTPUTS_FILE: ${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          BUILD_ARTIFACTS_OUTPUTS_FILE: ${{ env.SLSA_ARTIFACTS_FILE }}
           BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256: ${{ needs.build-artifacts-ubuntu.outputs.outputs-filename-sha256 }}
         run: |
           echo "SLSA_TOOL_INPUTS: $SLSA_TOOL_INPUTS"
           echo "BUILD_ARTIFACTS_OUTPUTS: $BUILD_ARTIFACTS_OUTPUTS"
-          echo "BUILD_ARTIFACTS_OUTPUTS_FILEN: $BUILD_ARTIFACTS_OUTPUTS_FILE"
-          echo "BUILD_ARTIFACTS_OUTPUTS_FILEN_SHA256: $BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256"
+          echo "BUILD_ARTIFACTS_OUTPUTS_FILE: $BUILD_ARTIFACTS_OUTPUTS_FILE"
+          echo "BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256: $BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256"
 
           tree
+
+          cat "$BUILD_ARTIFACTS_OUTPUTS_FILE"
 
           echo "generated and signed"
           #TODO: add the Action path
       
       - name: Upload the files
-        run: echo "uploaded with name slsa-attestations-random-number"
+        run: echo "uploaded with name slsa-attestations-XXXX"
 
   
