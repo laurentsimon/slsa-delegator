@@ -42,7 +42,7 @@ on:
     outputs:
       build-artifacts-outputs:
         description: "The outputs from the build-artitacts Action, unchanged."
-        value: ${{ jobs.build-artifacts-ubuntu.outputs.build-artifacts-outputs }}
+        value: ${{ jobs.build-artifacts-ubuntu.outputs.outputs }}
       attestations-download-name:
         description: "Name of the artifact to download all the attestations."
         value: ${{ jobs.generate-provenance.outputs.attestations-download-name }}
@@ -102,7 +102,8 @@ jobs:
   build-artifacts-ubuntu:
     if: fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label == 'ubuntu-latest'
     outputs:
-      build-artifacts-outputs: ${{ steps.build-artifacts-action.outputs.slsa-artifacts }}
+      outputs: ${{ toJson(steps.build-artifacts-action.outputs) }}
+      outputs-filename-sha256: ${{ steps.upload.outputs.output-filename-sha256 }}
     runs-on: ubuntu-latest
     # TODO: privacy-check, detect-env
     needs: [detect-env, validate-token]
@@ -200,7 +201,7 @@ jobs:
         id: build-artifacts-action
         env:
           # TODO: if saved in file, this implies the Action is *not* a docker-based Action.
-          SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ env.GITHUB_WORKSPACE }}/${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
           # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
@@ -209,6 +210,17 @@ jobs:
           # TODO: move other inputs as arguments.
           workflow-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
 
+      # TODO: Use the secure upload
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.SLSA_ARTIFACTS_FILE }}-XXXX
+          path: ${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+      - name: Upload securely the result
+        id: upload
+        run: |
+          echo "outputs-filename-sha256=abcdefg" >> "$GITHUB_OUTPUT"
+          # XXX indicates a random value, to ensure we don't collide with other workflow runs.
+
   # generate-provenance generates and signs the provenance.
   generate-provenance:
     needs: [validate-token, build-artifacts-ubuntu]
@@ -216,9 +228,34 @@ jobs:
       attestations-download-name: "slsa-attestations-random-number"
     runs-on: ubuntu-latest
     steps:
+      # TODO: secure download using ${{ needs.build-artifacts-ubuntu.outputs.outputs-filename-sha256 }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.SLSA_ARTIFACTS_FILE }}-XXXX
+
+      # TODO: makes this an Action.
+      - name: TODO + checkout repo
+        uses: bla/bla
+        with:
+          tool-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+          tool-repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
+          tool-ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
+          # Or predicate (?)
+          attestation-layout: ${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+
       - name: Generate and sign
         id: generate-sign
+        env:
+          SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+          BUILD_ARTIFACTS_OUTPUTS: ${{ needs.build-artifacts-ubuntu.outputs.outputs }}
+          BUILD_ARTIFACTS_OUTPUTS_FILE: ${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256: ${{ needs.build-artifacts-ubuntu.outputs.outputs-filename-sha256 }}
         run: |
+          echo "SLSA_TOOL_INPUTS: $SLSA_TOOL_INPUTS"
+          echo "BUILD_ARTIFACTS_OUTPUTS: $BUILD_ARTIFACTS_OUTPUTS"
+          echo "BUILD_ARTIFACTS_OUTPUTS_FILEN: $BUILD_ARTIFACTS_OUTPUTS_FILE"
+          echo "BUILD_ARTIFACTS_OUTPUTS_FILEN_SHA256: $BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256"
+
           echo "generated and signed"
           #TODO: add the Action path
       

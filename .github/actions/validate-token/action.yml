@@ -54,6 +54,7 @@ runs:
           cat raw_token.txt
           echo "signature:"
           cat signature.txt
+
           # ******* WARNING ***********
           # We MUST verify the identity from the cert and extract
           # the repo name and the ref and add it to the token.
@@ -72,6 +73,13 @@ runs:
           # Extract audience from token
           audience=$(cat raw_token.txt | base64 -d | jq -r '.builder.audience')
 
+          # Extract the `context`, which is a pre-defined string.
+          # `SLSA integration framework`
+          context_string=$(cat raw_token.txt | base64 -d | jq -r '.context')
+
+          # Extract the version of the token.
+          context_string=$(cat raw_token.txt | base64 -d | jq -r '.version')
+
           # 2. Validate the audience matches the intended SLSA workflow receipient
           if [ "$audience" != "$SLSA_AUDIENCE" ]; then
             echo "Expected SLSA audience $SLSA_AUDIENCE, recieved $audience"
@@ -82,6 +90,10 @@ runs:
           # We need to unmarshal the output and perform a deep compare.
           echo "github context:"
           echo ${GITHUB_CONTEXT} | jq -r
+
+          # Validate the version.
+
+          # Validate the context string.
           
           # 4. Output the verified token.
           validated_token="$(cat raw_token.txt | base64 -d | jq -c .)"

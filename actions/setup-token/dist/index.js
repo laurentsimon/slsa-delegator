@@ -105,6 +105,7 @@ function run() {
             // Construct our raw token.
             const rawSlsaToken = {
                 version: 1,
+                context: "SLSA integration framework",
                 builder: {
                     "private-repository": true,
                     "runner-label": runnerLabel,
