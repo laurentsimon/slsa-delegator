@@ -234,14 +234,14 @@ jobs:
           name: ${{ env.SLSA_ARTIFACTS_FILE }}-XXXX
 
       # TODO: makes this an Action.
-      - name: TODO + checkout repo
-        uses: bla/bla
-        with:
-          tool-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
-          tool-repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
-          tool-ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
-          # Or predicate (?)
-          attestation-layout: ${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+      # - name: TODO + checkout repo
+      #   uses: bla/bla
+      #   with:
+      #     tool-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+      #     tool-repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
+      #     tool-ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
+      #     # Or predicate (?)
+      #     attestation-layout: ${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
 
       - name: Generate and sign
         id: generate-sign
@@ -255,6 +255,8 @@ jobs:
           echo "BUILD_ARTIFACTS_OUTPUTS: $BUILD_ARTIFACTS_OUTPUTS"
           echo "BUILD_ARTIFACTS_OUTPUTS_FILEN: $BUILD_ARTIFACTS_OUTPUTS_FILE"
           echo "BUILD_ARTIFACTS_OUTPUTS_FILEN_SHA256: $BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256"
+
+          tree
 
           echo "generated and signed"
           #TODO: add the Action path
