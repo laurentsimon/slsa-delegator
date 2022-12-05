@@ -108,6 +108,9 @@ async function run(): Promise<void> {
           repository: "laurentsimon/slsa-delegated-tool",
           ref: "main",
         },
+        // TODO: grab the calling workflow here ?
+        // We need it for policy authz and we should report it
+        // somewhere. Where?
         inputs: workflowInputs,
       },
     };
