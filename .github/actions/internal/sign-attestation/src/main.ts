@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import fs from "fs";
-import sigstore from "sigstore";
+import * as sigstore from "sigstore";
 import sanitizeFilename from "sanitize-filename";
 
 const signOptions = {

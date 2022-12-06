@@ -33920,12 +33920,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(6046));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
-const sigstore_1 = __importDefault(__nccwpck_require__(5388));
+const sigstore = __importStar(__nccwpck_require__(5388));
 const sanitize_filename_1 = __importDefault(__nccwpck_require__(3759));
 const signOptions = {
     oidcClientID: "sigstore",
     oidcIssuer: "https://oauth2.sigstore.dev/auth",
-    rekorBaseURL: sigstore_1.default.sigstore.DEFAULT_REKOR_BASE_URL,
+    rekorBaseURL: sigstore.sigstore.DEFAULT_REKOR_BASE_URL,
 };
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -33939,7 +33939,7 @@ function run() {
             // reserved characters like :
             const safe_input = (0, sanitize_filename_1.default)(attestation);
             const buffer = fs_1.default.readFileSync(safe_input);
-            const bundle = yield sigstore_1.default.sigstore.signAttestation(buffer, payloadType, signOptions);
+            const bundle = yield sigstore.sigstore.signAttestation(buffer, payloadType, signOptions);
             console.log(JSON.stringify(bundle));
             const outputFile = `${attestation}.jsonl`;
             fs_1.default.writeFileSync(outputFile, `${JSON.stringify(bundle)}\n`);
