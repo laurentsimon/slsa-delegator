@@ -15,10 +15,23 @@ jobs:
           echo "Hello, world!" >> attestation.txt
       - name: Test sign attestation
         id: sign
-        uses: asraa/slsa-delegator/.github/actions/sign-attestation@main
+        uses: asraa/slsa-delegator/.github/actions/internal/sign-attestation@main
         with:
           attestation: attestation.txt
           payload_type: 'text/plain'
+      # TODO: Add verify-attestation
       - name: Output
         run: |
           cat attestation.txt.jsonl | jq
+
+      - name: Test sign attestation failure
+        id: bad-sign
+        continue-on-error: true
+        uses: asraa/slsa-delegator/.github/actions/internal/sign-attestation@main
+        with:
+          # Bad path!
+          attestation: ../attestation.txt
+          payload_type: 'text/plain'
+      - name: Check failures
+        if: steps.bad-sign.outcome != 'failure'
+        run: exit 1

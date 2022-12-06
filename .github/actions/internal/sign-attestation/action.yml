@@ -1,0 +1,13 @@
+name: 'Sign Attestation'
+description: 'Signs an in-toto attestation and returns a DSSE signed envelope in a trust bundle at the file attestation.jsonl'
+inputs:
+  attestation:
+    description: 'An in-toto attestation to sign'
+    required: true
+  payload-type:
+    description: 'The in-toto payload type'
+    required: false
+    default: 'application/vnd.in-toto+json'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
