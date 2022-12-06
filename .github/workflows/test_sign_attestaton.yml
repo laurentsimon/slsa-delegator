@@ -18,7 +18,7 @@ jobs:
         uses: asraa/slsa-delegator/.github/actions/internal/sign-attestation@main
         with:
           attestation: attestation.txt
-          payload_type: 'text/plain'
+          payload-type: 'text/plain'
       # TODO: Add verify-attestation
       - name: Output
         run: |
@@ -31,7 +31,7 @@ jobs:
         with:
           # Bad path!
           attestation: ../attestation.txt
-          payload_type: 'text/plain'
+          payload-type: 'text/plain'
       - name: Check failures
         if: steps.bad-sign.outcome != 'failure'
         run: exit 1
