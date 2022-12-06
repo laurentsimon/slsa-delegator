@@ -15,7 +15,7 @@ jobs:
           echo "Hello, world!" >> attestation.txt
       - name: Test sign attestation
         id: sign
-        uses: asraa/slsa-delegator/.github/actions/internal/sign-attestation@main
+        uses: laurentsimon/slsa-delegator/.github/actions/internal/sign-attestation@main
         with:
           attestation: attestation.txt
           payload-type: 'text/plain'
@@ -27,7 +27,7 @@ jobs:
       - name: Test sign attestation failure
         id: bad-sign
         continue-on-error: true
-        uses: asraa/slsa-delegator/.github/actions/internal/sign-attestation@main
+        uses: laurentsimon/slsa-delegator/.github/actions/internal/sign-attestation@main
         with:
           # Bad path!
           attestation: ../attestation.txt
