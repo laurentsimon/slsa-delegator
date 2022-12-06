@@ -57,6 +57,7 @@ function run() {
                 .replace(/^(\.\.(\/|\\|$))+/, "");
             const wd = process.env[`GITHUB_WORKSPACE`] || "";
             const safe_join = path_1.default.join(wd, safe_input);
+            console.log(`Reading attestation file at ${safe_join}!`);
             const buffer = fs_1.default.readFileSync(safe_join);
             const bundle = yield sigstore.sigstore.signAttestation(buffer, payloadType, signOptions);
             console.log(JSON.stringify(bundle));

@@ -22,6 +22,7 @@ async function run(): Promise<void> {
       .replace(/^(\.\.(\/|\\|$))+/, "");
     const wd = process.env[`GITHUB_WORKSPACE`] || "";
     const safe_join = path.join(wd, safe_input);
+    console.log(`Reading attestation file at ${safe_join}!`);
 
     const buffer = fs.readFileSync(safe_join);
 
