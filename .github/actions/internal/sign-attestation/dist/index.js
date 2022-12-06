@@ -33804,9 +33804,7 @@ function run() {
             console.log(`Attestation ${attestation}!`);
             const payloadType = core.getInput("payload-type");
             console.log(`Payload Type ${payloadType}!`);
-            const safe_input = path_1.default
-                .normalize(attestation)
-                .replace(/^(\.\.(\/|\\|$))+/, "");
+            const safe_input = path_1.default.normalize(attestation);
             const wd = process.env[`GITHUB_WORKSPACE`] || "";
             const safe_join = path_1.default.join(wd, safe_input);
             console.log(`Reading attestation file at ${safe_join}!`);

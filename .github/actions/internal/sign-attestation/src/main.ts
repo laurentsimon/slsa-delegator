@@ -17,9 +17,7 @@ async function run(): Promise<void> {
     const payloadType = core.getInput("payload-type");
     console.log(`Payload Type ${payloadType}!`);
 
-    const safe_input = path
-      .normalize(attestation)
-      .replace(/^(\.\.(\/|\\|$))+/, "");
+    const safe_input = path.normalize(attestation);
     const wd = process.env[`GITHUB_WORKSPACE`] || "";
     const safe_join = path.join(wd, safe_input);
     console.log(`Reading attestation file at ${safe_join}!`);
