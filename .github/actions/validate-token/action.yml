@@ -18,6 +18,14 @@ outputs:
     description: "slsa validated token"
     value: ${{ steps.validate.outputs.slsa-validated-token }}
 
+  tool-repository:
+    description: "the tool repository taken from the signing certificate"
+    value: ${{ steps.validate.outputs.tool-repository }}
+
+  tool-ref:
+    description: "the tool repository ref taken from the signing certificate"
+    value: ${{ steps.validate.outputs.tool-ref }}
+
 runs:
   using: 'composite'
   steps:
@@ -64,8 +72,13 @@ runs:
           cat signature.txt | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
           cat cert.der.base64
           
-          # TODO: Check certificate properties? We can match the tool.reusable-workflow
-          # repository and ref with the certificate SAN and branch.
+          # Add tool repository and ref to outputs by extracting the certificate SAN.
+          repository=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName | grep -o -P '(?<=github.com/).*' | cut -d '/' -f1-2)
+          echo "tool-repository=$repository" >> "$GITHUB_OUTPUT"
+
+          # This is the fully qualified ref: refs/heads/main
+          ref=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName | grep -o -P '(?<=github.com/).*' | cut -d '@' -f2)
+          echo "tool-ref=$ref" >> "$GITHUB_OUTPUT"
 
           # Extract GitHub context from token
           run_id=$(cat raw_token.txt | base64 -d | jq -r '.github.context.runId')

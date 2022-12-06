@@ -138,8 +138,8 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
-          ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
+          repository: ${{ needs.validate-token.outputs.tool-repository }}
+          ref: ${{ needs.validate-token.outputs.tool-ref }}
           path: __TOOL_CHECKOUT_DIR__
       - run: mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
