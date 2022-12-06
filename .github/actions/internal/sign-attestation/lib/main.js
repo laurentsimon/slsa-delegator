@@ -52,9 +52,12 @@ function run() {
             console.log(`Attestation ${attestation}!`);
             const payloadType = core.getInput("payload-type");
             console.log(`Payload Type ${payloadType}!`);
-            const safe_input = path_1.default.normalize(attestation);
+            // Detect directory traversal
             const wd = process.env[`GITHUB_WORKSPACE`] || "";
-            const safe_join = path_1.default.join(wd, safe_input);
+            const safe_join = path_1.default.join(wd, attestation);
+            if (!safe_join.startsWith(wd)) {
+                throw Error(`unsafe path {attestation}`);
+            }
             console.log(`Reading attestation file at ${safe_join}!`);
             const buffer = fs_1.default.readFileSync(safe_join);
             const bundle = yield sigstore.sigstore.signAttestation(buffer, payloadType, signOptions);

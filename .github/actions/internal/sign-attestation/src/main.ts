@@ -17,9 +17,12 @@ async function run(): Promise<void> {
     const payloadType = core.getInput("payload-type");
     console.log(`Payload Type ${payloadType}!`);
 
-    const safe_input = path.normalize(attestation);
+    // Detect directory traversal
     const wd = process.env[`GITHUB_WORKSPACE`] || "";
-    const safe_join = path.join(wd, safe_input);
+    const safe_join = path.join(wd, attestation);
+    if (!safe_join.startsWith(wd)) {
+      throw Error(`unsafe path {attestation}`);
+    }
     console.log(`Reading attestation file at ${safe_join}!`);
 
     const buffer = fs.readFileSync(safe_join);
