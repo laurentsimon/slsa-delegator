@@ -21,7 +21,7 @@ async function run(): Promise<void> {
     const wd = process.env[`GITHUB_WORKSPACE`] || "";
     const safe_join = path.join(wd, attestation);
     if (!safe_join.startsWith(wd)) {
-      throw Error(`unsafe path {attestation}`);
+      throw Error(`unsafe path ${attestation}`);
     }
     console.log(`Reading attestation file at ${safe_join}!`);
 
