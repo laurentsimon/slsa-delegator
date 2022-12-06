@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import fs from "fs";
 import * as sigstore from "sigstore";
-import sanitizeFilename from "sanitize-filename";
+import path from "path";
 
 const signOptions = {
   oidcClientID: "sigstore",
@@ -17,11 +17,13 @@ async function run(): Promise<void> {
     const payloadType = core.getInput("payload-type");
     console.log(`Payload Type ${payloadType}!`);
 
-    // This removes control characters, reserved filenames (..), and
-    // reserved characters like :
-    const safe_input = sanitizeFilename(attestation);
+    const safe_input = path
+      .normalize(attestation)
+      .replace(/^(\.\.(\/|\\|$))+/, "");
+    const wd = process.env[`GITHUB_WORKSPACE`] || "";
+    const safe_join = path.join(wd, safe_input);
 
-    const buffer = fs.readFileSync(safe_input);
+    const buffer = fs.readFileSync(safe_join);
 
     const bundle = await sigstore.sigstore.signAttestation(
       buffer,

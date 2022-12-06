@@ -38,7 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
 const fs_1 = __importDefault(require("fs"));
 const sigstore = __importStar(require("sigstore"));
-const sanitize_filename_1 = __importDefault(require("sanitize-filename"));
+const path_1 = __importDefault(require("path"));
 const signOptions = {
     oidcClientID: "sigstore",
     oidcIssuer: "https://oauth2.sigstore.dev/auth",
@@ -52,10 +52,12 @@ function run() {
             console.log(`Attestation ${attestation}!`);
             const payloadType = core.getInput("payload-type");
             console.log(`Payload Type ${payloadType}!`);
-            // This removes control characters, reserved filenames (..), and
-            // reserved characters like :
-            const safe_input = (0, sanitize_filename_1.default)(attestation);
-            const buffer = fs_1.default.readFileSync(safe_input);
+            const safe_input = path_1.default
+                .normalize(attestation)
+                .replace(/^(\.\.(\/|\\|$))+/, "");
+            const wd = process.env[`GITHUB_WORKSPACE`] || "";
+            const safe_join = path_1.default.join(wd, safe_input);
+            const buffer = fs_1.default.readFileSync(safe_join);
             const bundle = yield sigstore.sigstore.signAttestation(buffer, payloadType, signOptions);
             console.log(JSON.stringify(bundle));
             const outputFile = `${attestation}.jsonl`;

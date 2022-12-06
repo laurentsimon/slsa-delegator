@@ -23774,73 +23774,6 @@ module.exports = safer
 
 /***/ }),
 
-/***/ 3759:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-/*jshint node:true*/
-
-
-/**
- * Replaces characters in strings that are illegal/unsafe for filenames.
- * Unsafe characters are either removed or replaced by a substitute set
- * in the optional `options` object.
- *
- * Illegal Characters on Various Operating Systems
- * / ? < > \ : * | "
- * https://kb.acronis.com/content/39790
- *
- * Unicode Control codes
- * C0 0x00-0x1f & C1 (0x80-0x9f)
- * http://en.wikipedia.org/wiki/C0_and_C1_control_codes
- *
- * Reserved filenames on Unix-based systems (".", "..")
- * Reserved filenames in Windows ("CON", "PRN", "AUX", "NUL", "COM1",
- * "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
- * "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", and
- * "LPT9") case-insesitively and with or without filename extensions.
- *
- * Capped at 255 characters in length.
- * http://unix.stackexchange.com/questions/32795/what-is-the-maximum-allowed-filename-and-folder-size-with-ecryptfs
- *
- * @param  {String} input   Original filename
- * @param  {Object} options {replacement: String | Function }
- * @return {String}         Sanitized filename
- */
-
-var truncate = __nccwpck_require__(4436);
-
-var illegalRe = /[\/\?<>\\:\*\|"]/g;
-var controlRe = /[\x00-\x1f\x80-\x9f]/g;
-var reservedRe = /^\.+$/;
-var windowsReservedRe = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$/i;
-var windowsTrailingRe = /[\. ]+$/;
-
-function sanitize(input, replacement) {
-  if (typeof input !== 'string') {
-    throw new Error('Input must be string');
-  }
-  var sanitized = input
-    .replace(illegalRe, replacement)
-    .replace(controlRe, replacement)
-    .replace(reservedRe, replacement)
-    .replace(windowsReservedRe, replacement)
-    .replace(windowsTrailingRe, replacement);
-  return truncate(sanitized, 255);
-}
-
-module.exports = function (input, options) {
-  var replacement = (options && options.replacement) || '';
-  var output = sanitize(input, replacement);
-  if (replacement === '') {
-    return output;
-  }
-  return sanitize(output, '');
-};
-
-
-/***/ }),
-
 /***/ 4114:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -32364,70 +32297,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ 4436:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var truncate = __nccwpck_require__(6327);
-var getLength = Buffer.byteLength.bind(Buffer);
-module.exports = truncate.bind(null, getLength);
-
-
-/***/ }),
-
-/***/ 6327:
-/***/ ((module) => {
-
-"use strict";
-
-
-function isHighSurrogate(codePoint) {
-  return codePoint >= 0xd800 && codePoint <= 0xdbff;
-}
-
-function isLowSurrogate(codePoint) {
-  return codePoint >= 0xdc00 && codePoint <= 0xdfff;
-}
-
-// Truncate string by size in bytes
-module.exports = function truncate(getLength, string, byteLength) {
-  if (typeof string !== "string") {
-    throw new Error("Input must be string");
-  }
-
-  var charLength = string.length;
-  var curByteLength = 0;
-  var codePoint;
-  var segment;
-
-  for (var i = 0; i < charLength; i += 1) {
-    codePoint = string.charCodeAt(i);
-    segment = string[i];
-
-    if (isHighSurrogate(codePoint) && isLowSurrogate(string.charCodeAt(i + 1))) {
-      i += 1;
-      segment += string[i];
-    }
-
-    curByteLength += getLength(segment);
-
-    if (curByteLength === byteLength) {
-      return string.slice(0, i + 1);
-    }
-    else if (curByteLength > byteLength) {
-      return string.slice(0, i - segment.length + 1);
-    }
-  }
-
-  return string;
-};
-
-
-
-/***/ }),
-
 /***/ 7752:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -33921,7 +33790,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(6046));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const sigstore = __importStar(__nccwpck_require__(5388));
-const sanitize_filename_1 = __importDefault(__nccwpck_require__(3759));
+const path_1 = __importDefault(__nccwpck_require__(1017));
 const signOptions = {
     oidcClientID: "sigstore",
     oidcIssuer: "https://oauth2.sigstore.dev/auth",
@@ -33935,10 +33804,12 @@ function run() {
             console.log(`Attestation ${attestation}!`);
             const payloadType = core.getInput("payload-type");
             console.log(`Payload Type ${payloadType}!`);
-            // This removes control characters, reserved filenames (..), and
-            // reserved characters like :
-            const safe_input = (0, sanitize_filename_1.default)(attestation);
-            const buffer = fs_1.default.readFileSync(safe_input);
+            const safe_input = path_1.default
+                .normalize(attestation)
+                .replace(/^(\.\.(\/|\\|$))+/, "");
+            const wd = process.env[`GITHUB_WORKSPACE`] || "";
+            const safe_join = path_1.default.join(wd, safe_input);
+            const buffer = fs_1.default.readFileSync(safe_join);
             const bundle = yield sigstore.sigstore.signAttestation(buffer, payloadType, signOptions);
             console.log(JSON.stringify(bundle));
             const outputFile = `${attestation}.jsonl`;
