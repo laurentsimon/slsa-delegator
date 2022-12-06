@@ -70,14 +70,16 @@ runs:
 
           # Extract the certificate PEM
           cat signature.txt | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
-          cat cert.der.base64
+          cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName
           
           # Add tool repository and ref to outputs by extracting the certificate SAN.
           repository=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName | grep -o -P '(?<=github.com/).*' | cut -d '/' -f1-2)
+          echo "repository from cert: $repository"
           echo "tool-repository=$repository" >> "$GITHUB_OUTPUT"
 
           # This is the fully qualified ref: refs/heads/main
           ref=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName | grep -o -P '(?<=github.com/).*' | cut -d '@' -f2)
+          echo "ref from cert: $ref"
           echo "tool-ref=$ref" >> "$GITHUB_OUTPUT"
 
           # Extract GitHub context from token
