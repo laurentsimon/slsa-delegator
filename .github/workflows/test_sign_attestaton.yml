@@ -1,0 +1,37 @@
+name: Test Sign Attestation
+
+on: 
+  - workflow_dispatch
+
+jobs:
+  test_sign_attestation:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create attestation
+        run: |
+          echo "Hello, world!" >> attestation.txt
+      - name: Test sign attestation
+        id: sign
+        uses: laurentsimon/slsa-delegator/.github/actions/internal/sign-attestation@main
+        with:
+          attestation: attestation.txt
+          payload-type: 'text/plain'
+      # TODO: Add verify-attestation
+      - name: Output
+        run: |
+          cat attestation.txt.jsonl | jq
+
+      - name: Test sign attestation failure
+        id: bad-sign
+        continue-on-error: true
+        uses: laurentsimon/slsa-delegator/.github/actions/internal/sign-attestation@main
+        with:
+          # Bad path!
+          attestation: ../attestation.txt
+          payload-type: 'text/plain'
+      - name: Check failures
+        if: steps.bad-sign.outcome != 'failure'
+        run: exit 1
