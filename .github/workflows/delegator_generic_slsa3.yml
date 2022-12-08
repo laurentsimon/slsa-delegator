@@ -202,8 +202,6 @@ jobs:
       - name: Build artifacts
         id: build-artifacts-action
         env:
-          # TODO: if saved in file, this implies the Action is *not* a docker-based Action.
-          SLSA_OUTPUTS_ARTIFACTS_FILE: ${{ github.workspace }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
           # Note: JSON-formatted field need to use toJson().
           SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
@@ -212,7 +210,8 @@ jobs:
           # TODO: move other inputs as arguments.
           workflow-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
           # workflow-secrets: ${{ secrets.secrets }}
-          # output-file: ${{ github.workspace }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          # TODO: if saved in file, this implies the Action is *not* a docker-based Action.
+          slsa-output-file: ${{ github.workspace }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
 
       - run: mv ../${{ env.SLSA_OUTPUTS_DIR }} ${{ env.SLSA_OUTPUTS_DIR }}
 
