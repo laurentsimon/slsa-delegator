@@ -2752,7 +2752,7 @@ function writeAttestations(layoutFile, predicate) {
         // Iterate through SLSA output layout and create attestations
         for (const att in layout) {
             if (att !== "version") {
-                const subjectJson = layout[att];
+                const subjectJson = JSON.stringify(layout[att]);
                 const attestationJSON = `{
         "_type": "https://in-toto.io/Statement/v0.1",
         "subject": ${subjectJson},
