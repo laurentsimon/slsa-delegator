@@ -41,6 +41,7 @@ export async function writeAttestations(
   // Read SLSA output layout file.
   console.log(`Reading SLSA output file at ${layoutFile}!`);
   const buffer = fs.readFileSync(layoutFile);
-  console.log(`Using layout ${JSON.stringify(buffer)}\n`);
+  const layout = JSON.parse(buffer.toString());
+  console.log(`Using layout ${JSON.stringify(layout)}\n`);
   console.log(`Using predicate ${predicate}`);
 }

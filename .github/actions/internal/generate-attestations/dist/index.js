@@ -2744,7 +2744,8 @@ function writeAttestations(layoutFile, predicate) {
         // Read SLSA output layout file.
         console.log(`Reading SLSA output file at ${layoutFile}!`);
         const buffer = fs_1.default.readFileSync(layoutFile);
-        console.log(`Using layout ${JSON.stringify(buffer)}\n`);
+        const layout = JSON.parse(buffer.toString());
+        console.log(`Using layout ${JSON.stringify(layout)}\n`);
         console.log(`Using predicate ${predicate}`);
     });
 }
@@ -2819,7 +2820,7 @@ function run() {
             console.log(`Using SLSA output file at ${safe_join}!`);
             // Generate the predicate.
             const predicate = yield (0, attestation_1.generatePredicate)(toolInputs, toolUri, toolPath);
-            console.log(JSON.stringify(predicate));
+            console.log(JSON.stringify(JSON.parse(predicate.toString())));
             // Attach subjects and generate attestation files
             yield (0, attestation_1.writeAttestations)(safe_join, predicate);
             // const outputFile = `${attestation}.jsonl`;

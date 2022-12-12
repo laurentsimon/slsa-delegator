@@ -26,7 +26,7 @@ async function run(): Promise<void> {
 
     // Generate the predicate.
     const predicate = await generatePredicate(toolInputs, toolUri, toolPath);
-    console.log(JSON.stringify(predicate));
+    console.log(JSON.stringify(JSON.parse(predicate.toString())));
 
     // Attach subjects and generate attestation files
     await writeAttestations(safe_join, predicate);

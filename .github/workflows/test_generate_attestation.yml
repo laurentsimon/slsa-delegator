@@ -41,7 +41,7 @@ jobs:
 
           INPUTS=$(cat << EOF
           {
-            "release-tag": "v100"
+            "release-tag": "v100",
             "private-repository": "true"
           }
           EOF
