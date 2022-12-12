@@ -77,6 +77,7 @@ runs:
           cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName
 
           subjectAltName=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName)
+          subjectAltName=${subjectAltName##*URI:} # Strip text
           echo "subject alt name from cert (tool URI): $subjectAltName"
           echo "tool-uri=$subjectAltName" >> "$GITHUB_OUTPUT"
           
