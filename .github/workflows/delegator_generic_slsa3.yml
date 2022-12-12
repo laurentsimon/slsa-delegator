@@ -212,7 +212,7 @@ jobs:
           workflow-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
           # workflow-secrets: ${{ secrets.secrets }}
           # TODO: if saved in file, this implies the Action is *not* a docker-based Action.
-          slsa-output-file: ${{ github.workspace }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          slsa-outputs-file: ${{ github.workspace }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
 
       - run: mv ../${{ env.SLSA_OUTPUTS_DIR }} ${{ env.SLSA_OUTPUTS_DIR }}
 
