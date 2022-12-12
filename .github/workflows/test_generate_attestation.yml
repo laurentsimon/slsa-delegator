@@ -39,21 +39,23 @@ jobs:
           EOF
           cat DATA > slsa-outputs.json
 
-          cat <<EOF >INPUTS
+          INPUTS=$(cat << EOF
           {
             "release-tag": "v100"
             "private-repository": "true"
           }
           EOF
-          INPUTS=$(cat INPUTS)
-          echo "tool-inputs=${INPUTS}" >> $GITHUB_ENV
+          )
+          echo "INPUTS<<EOF" >> $GITHUB_ENV
+          echo "$INPUTS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Test generate attestations
         id: sign
         uses: laurentsimon/slsa-delegator/.github/actions/internal/generate-attestations@main
         with:
           slsa-outputs-file: slsa-outputs.json
-          tool-inputs: ${{ env.tool-inputs }}
+          tool-inputs: ${{ env.INPUTS }}
           tool-uri: "https://github.com/laurentsimon/slsa-delegated-tool/.github/workflows/tool1_slsa3.yml@refs/heads/main"
           tool-path: "./actions/build-artifacts-composite"
 
