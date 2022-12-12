@@ -82,6 +82,7 @@ jobs:
       slsa-token: ${{ steps.validate.outputs.slsa-validated-token }}
       tool-repository: ${{ steps.validate.outputs.tool-repository }}
       tool-ref: ${{ steps.validate.outputs.tool-ref }}
+      tool-uri: ${{ steps.validate.outputs.tool-uri }}
     runs-on: ubuntu-latest
     needs: [detect-env]
     steps:

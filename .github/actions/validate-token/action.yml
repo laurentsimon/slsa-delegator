@@ -26,6 +26,10 @@ outputs:
     description: "the tool repository ref taken from the signing certificate"
     value: ${{ steps.validate.outputs.tool-ref }}
 
+  tool-uri:
+    description: "the tool repository uri taken from the signing certificate"
+    value: ${{ steps.validate.outputs.tool-uri }}
+
 runs:
   using: 'composite'
   steps:
@@ -71,14 +75,18 @@ runs:
           # Extract the certificate PEM
           cat signature.txt | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
           cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName
+
+          subjectAltName=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName)
+          echo "subject alt name from cert (tool URI): $subjectAltName"
+          echo "tool-uri=$subjectAltName" >> "$GITHUB_OUTPUT"
           
           # Add tool repository and ref to outputs by extracting the certificate SAN.
-          repository=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName | grep -o -P '(?<=github.com/).*' | cut -d '/' -f1-2)
+          repository=$(grep -o -P '(?<=github.com/).*' subjectAltName | cut -d '/' -f1-2)
           echo "repository from cert: $repository"
           echo "tool-repository=$repository" >> "$GITHUB_OUTPUT"
 
           # This is the fully qualified ref: refs/heads/main
-          ref=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName | grep -o -P '(?<=github.com/).*' | cut -d '@' -f2)
+          ref=$(grep -o -P '(?<=github.com/).*' subjectAltName | cut -d '@' -f2)
           echo "ref from cert: $ref"
           echo "tool-ref=$ref" >> "$GITHUB_OUTPUT"
 
