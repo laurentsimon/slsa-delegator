@@ -2820,7 +2820,7 @@ function run() {
             console.log(`Using SLSA output file at ${safe_join}!`);
             // Generate the predicate.
             const predicate = yield (0, attestation_1.generatePredicate)(toolInputs, toolUri, toolPath);
-            console.log(JSON.stringify(JSON.parse(predicate.toString())));
+            console.log(predicate.toString());
             // Attach subjects and generate attestation files
             yield (0, attestation_1.writeAttestations)(safe_join, predicate);
             // const outputFile = `${attestation}.jsonl`;
