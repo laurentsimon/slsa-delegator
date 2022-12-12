@@ -1,0 +1,18 @@
+name: 'Generate Attestations'
+description: 'Generates in-toto attestations based on a build's SLSA outputs layout and other trusted metadata inputs'
+inputs:
+  slsa-outputs-file:
+    description: 'A JSON file describing the SLSA output layout with attestation filename keys and the generated subjects (and digests)'
+    required: true
+  tool-inputs:
+    description: 'The SLSA tool inputs used for the tool run.'
+    required: true
+  tool-uri:
+    description: 'The tool URI'
+    required: true
+  tool-path:
+    description: 'The path to the tool, relative to the tool repository'
+    required: true
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
