@@ -1,5 +1,5 @@
 name: 'Generate Attestations'
-description: 'Generates in-toto attestations based on a build's SLSA outputs layout and other trusted metadata inputs'
+description: 'Generates in-toto attestations based on a builds SLSA outputs layout and other trusted metadata inputs'
 inputs:
   slsa-outputs-file:
     description: 'A JSON file describing the SLSA output layout with attestation filename keys and the generated subjects (and digests)'
