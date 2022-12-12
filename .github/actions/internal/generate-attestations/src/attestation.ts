@@ -31,6 +31,8 @@ export async function generatePredicate(
           }
         ]
       }`;
+
+  // TODO: Return a string with JSON.stringify?
   return Buffer.from(predicateJson);
 }
 
@@ -43,5 +45,25 @@ export async function writeAttestations(
   const buffer = fs.readFileSync(layoutFile);
   const layout = JSON.parse(buffer.toString());
   console.log(`Using layout ${JSON.stringify(layout)}\n`);
+
+  // Read predicate
   console.log(`Using predicate ${predicate}`);
+
+  // Iterate through SLSA output layout and create attestations
+  for (const att in layout) {
+    if (att !== "version") {
+      const subjectJson = layout[att];
+
+      const attestationJSON = `{
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "subject": ${subjectJson},
+        "predicateType": "https://slsa.dev/provenance/v0.2",
+        "predicate": {
+          ${predicate}
+        }`;
+
+      console.log(`Writing attestation ${att}`);
+      console.log(attestationJSON);
+    }
+  }
 }
