@@ -15,7 +15,7 @@ jobs:
           cat <<EOF >DATA
           {
             "version": 1,
-            "attestation1.intoto.json":[
+            "attestation1.intoto":[
               {
               "name": "artifact11",
               "digest": "abcde"
@@ -25,7 +25,7 @@ jobs:
               "digest": "iuyreq"
               }
             ],
-            "attestation2.intoto.json":[
+            "attestation2.intoto":[
               {
               "name": "artifact21",
               "digest": "abcde"
