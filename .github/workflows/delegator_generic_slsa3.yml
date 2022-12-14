@@ -250,6 +250,13 @@ jobs:
           tool-uri: ${{ needs.validate-token.outputs.tool-uri }}
           tool-path: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
 
+      - name: Upload generated attestations
+        id: upload
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3.1.1
+        with:
+          name: "${{ steps.sign.outputs.output-folder }}"
+          path: "${{ steps.sign.outputs.output-folder }}"
+
       - name: Generate and sign
         id: generate-sign
         env:
