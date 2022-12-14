@@ -239,15 +239,14 @@ jobs:
         with:
           name: ${{ env.SLSA_ARTIFACTS_FILE }}-XXXX
 
-      # TODO: makes this an Action.
-      # - name: TODO + checkout repo
-      #   uses: bla/bla
-      #   with:
-      #     tool-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
-      #     tool-repository: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.repository }}
-      #     tool-ref: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.reusable-workflow.ref }}
-      #     # Or predicate (?)
-      #     attestation-layout: ${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+      - name: Generate attestations
+        id: sign
+        uses: laurentsimon/slsa-delegator/.github/actions/internal/generate-attestations@main
+        with:
+          slsa-outputs-file: ${{ needs.build-artifacts-ubuntu.outputs.outputs }}
+          tool-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+          tool-uri: ${{ needs.validate-token.outputs.tool-uri }}
+          tool-path: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
 
       - name: Generate and sign
         id: generate-sign
@@ -268,8 +267,6 @@ jobs:
 
           echo "generated and signed"
           #TODO: add the Action path
-      
-      - name: Upload the files
-        run: echo "uploaded with name slsa-attestations-XXXX"
+
 
   
