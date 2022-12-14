@@ -232,6 +232,8 @@ jobs:
     needs: [validate-token, build-artifacts-ubuntu]
     outputs:
       attestations-download-name: "slsa-attestations-XXXX"
+    permissions:
+      id-token: write # Needed to sign
     runs-on: ubuntu-latest
     steps:
       # TODO: secure download using ${{ needs.build-artifacts-ubuntu.outputs.outputs-filename-sha256 }}
