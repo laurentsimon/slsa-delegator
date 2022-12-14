@@ -29,10 +29,10 @@ async function run(): Promise<void> {
     console.log(predicate.toString());
 
     // Attach subjects and generate attestation files
-    await writeAttestations(safe_join, predicate);
+    const outputFolder = core.getInput("output-folder");
+    await writeAttestations(safe_join, predicate, outputFolder);
 
-    // const outputFile = `${attestation}.jsonl`;
-    // fs.writeFileSync(outputFile, `${JSON.stringify(bundle)}\n`);
+    core.setOutput("output-folder", outputFolder);
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);

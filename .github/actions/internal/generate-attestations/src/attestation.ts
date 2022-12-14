@@ -1,5 +1,12 @@
 import fs from "fs";
 import { context } from "@actions/github";
+import * as sigstore from "sigstore";
+
+const signOptions = {
+  oidcClientID: "sigstore",
+  oidcIssuer: "https://oauth2.sigstore.dev/auth",
+  rekorBaseURL: sigstore.sigstore.DEFAULT_REKOR_BASE_URL,
+};
 
 export async function generatePredicate(
   toolInputs: string,
@@ -54,7 +61,8 @@ export async function generatePredicate(
 
 export async function writeAttestations(
   layoutFile: string,
-  predicate: Buffer
+  predicate: Buffer,
+  outputFolder: string
 ): Promise<void> {
   // Read SLSA output layout file.
   console.log(`Reading SLSA output file at ${layoutFile}!`);
@@ -77,10 +85,21 @@ export async function writeAttestations(
         "predicate": ${predicate}`;
 
       // Sign attestations with sigstore
+      const attestationBuffer = Buffer.from(attestationJSON);
+      const bundle = await sigstore.sigstore.signAttestation(
+        attestationBuffer,
+        "application/vnd.in-toto+json",
+        signOptions
+      );
+
+      // Write .sigstore bundle
+      // TODO: also write the normal attestation in slsa-verifier format
+      const outputFile = `${outputFolder}/${att}.sigstore`;
+      fs.writeFileSync(outputFile, `${JSON.stringify(bundle)}\n`);
 
       // Write signed envelopes
       console.log(`Writing attestation ${att}`);
-      console.log(attestationJSON);
+      console.log(JSON.stringify(bundle));
     }
   }
 }

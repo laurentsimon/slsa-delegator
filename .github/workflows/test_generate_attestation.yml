@@ -59,4 +59,11 @@ jobs:
           tool-uri: "https://github.com/laurentsimon/slsa-delegated-tool/.github/workflows/tool1_slsa3.yml@refs/heads/main"
           tool-path: "./actions/build-artifacts-composite"
 
+      - name: Upload generated attestations
+        id: upload
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3.1.1
+        with:
+          name: "${{ steps.sign.outputs.output-folder }}"
+          path: "${{ steps.sign.outputs.output-folder }}"
+
 

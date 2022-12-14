@@ -13,6 +13,13 @@ inputs:
   tool-path:
     description: 'The path to the tool, relative to the tool repository'
     required: true
+  output-folder:
+    description: 'Output folder to place attestations'
+    required: false
+    default: 'outputs'
+outputs:
+  output-folder:
+    description: 'Output folder where attestations were placed'
 runs:
   using: 'node16'
   main: 'dist/index.js'
