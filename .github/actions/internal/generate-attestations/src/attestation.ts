@@ -107,7 +107,9 @@ export async function writeAttestations(
         bundle.verificationMaterial?.x509CertificateChain?.certificates[0]
           .rawBytes || "";
       const lines = certBytes.match(/.{1,64}/g) || "";
-      const certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\\n");
+      const certPEM = [PEM_HEADER, ...lines, PEM_FOOTER]
+        .join("\n")
+        .concat("\n");
       envelopeJSON.signatures[0]["cert"] = certPEM;
 
       console.log(certPEM);
