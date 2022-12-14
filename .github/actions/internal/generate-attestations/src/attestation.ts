@@ -101,7 +101,6 @@ export async function writeAttestations(
       fs.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
 
       // TODO: also write the normal attestation in slsa-verifier format
-      // const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
       const envelopeJSON = JSON.parse(JSON.stringify(bundle.dsseEnvelope));
       const certBytes =
         bundle.verificationMaterial?.x509CertificateChain?.certificates[0]
@@ -114,6 +113,9 @@ export async function writeAttestations(
 
       console.log(certPEM);
       console.log(JSON.stringify(envelopeJSON, null, "  "));
+
+      const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
+      fs.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
 
       // Write signed envelopes
       console.log(`Writing attestation ${att}`);
