@@ -1,4 +1,5 @@
 import fs from "fs";
+import { context } from "@actions/github";
 
 export async function generatePredicate(
   toolInputs: string,
@@ -8,6 +9,8 @@ export async function generatePredicate(
   console.log(`Generating predicate!`);
   // TODO: Validate inputs!
 
+  // Create materials with repository and sha from GH context
+  // TODO: Use a client to get repository_id, actor_id, and repository_owner_id
   const predicateJson = `{
         "builder": {
           "id": "${toolUri}"
@@ -15,18 +18,31 @@ export async function generatePredicate(
         "buildType": "https://github.com/slsa-framework/slsa-github-generator/delegator-generic@v0",
         "metadata": {},
         "invocation": {
-            "parameters": {}
+            "parameters": {},
+            "environment": {
+              "github_actor": "${context.action}",
+              "github_event_name": "${context.eventName}",
+              "github_ref": "${context.ref}",
+              "github_ref_type": "${context.payload}",
+              "github_repository_owner": "${context.repo.owner}",
+              "github_run_id": "${context.runId}",
+              "github_run_number": "${context.runNumber}",
+              "github_sha1": "${context.sha}"
+            },
+            "metadata": {
+                "buildInvocationID": "${context.runId}-${context.runNumber}"
+            }
         },
         "buildConfig" :{
             "version": 1,
-            "inputs": ${toolInputs},
-            "tool": ${toolPath}
+            "inputs": "${toolInputs}",
+            "tool": "${toolPath}"
         },
         "materials": [
           {
-            "uri": materialsUri,
+            "uri": "git+${context.serverUrl}/${context.repo}@${context.ref}",
             "digest": {
-              "sha1": buildSourceVersion
+              "sha1": "${context.sha}"
             }
           }
         ]
@@ -58,10 +74,11 @@ export async function writeAttestations(
         "_type": "https://in-toto.io/Statement/v0.1",
         "subject": ${subjectJson},
         "predicateType": "https://slsa.dev/provenance/v0.2",
-        "predicate": {
-          ${predicate}
-        }`;
+        "predicate": ${predicate}`;
 
+      // Sign attestations with sigstore
+
+      // Write signed envelopes
       console.log(`Writing attestation ${att}`);
       console.log(attestationJSON);
     }
