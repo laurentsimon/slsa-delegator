@@ -40604,10 +40604,9 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 // TODO: also write the normal attestation in slsa-verifier format
                 // const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
                 const envelopeJSON = JSON.parse(JSON.stringify(bundle.dsseEnvelope));
-                const certBytes = (_b = (_a = bundle.verificationMaterial) === null || _a === void 0 ? void 0 : _a.x509CertificateChain) === null || _b === void 0 ? void 0 : _b.certificates[0].rawBytes;
-                const certPEM = [PEM_HEADER, certBytes, PEM_FOOTER]
-                    .join("\n")
-                    .concat("\n");
+                const certBytes = ((_b = (_a = bundle.verificationMaterial) === null || _a === void 0 ? void 0 : _a.x509CertificateChain) === null || _b === void 0 ? void 0 : _b.certificates[0].rawBytes) || "";
+                const lines = certBytes.match(/.{1,64}/g) || "";
+                const certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\\n");
                 envelopeJSON.signatures[0]["cert"] = certPEM;
                 console.log(certPEM);
                 console.log(JSON.stringify(envelopeJSON, null, "  "));
