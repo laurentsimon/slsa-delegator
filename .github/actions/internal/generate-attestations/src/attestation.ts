@@ -8,6 +8,9 @@ const signOptions = {
   rekorBaseURL: sigstore.sigstore.DEFAULT_REKOR_BASE_URL,
 };
 
+const PEM_HEADER = "-----BEGIN CERTIFICATE-----";
+const PEM_FOOTER = "-----END CERTIFICATE-----";
+
 export async function generatePredicate(
   toolInputs: string,
   toolUri: string,
@@ -93,10 +96,23 @@ export async function writeAttestations(
       );
 
       // Write .sigstore bundle
-      // TODO: also write the normal attestation in slsa-verifier format
       fs.mkdirSync(outputFolder, { recursive: true });
-      const outputFile = `${outputFolder}/${att}.sigstore`;
-      fs.writeFileSync(outputFile, `${JSON.stringify(bundle)}\n`);
+      const outputBundleFile = `${outputFolder}/${att}.sigstore`;
+      fs.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
+
+      // TODO: also write the normal attestation in slsa-verifier format
+      // const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
+      const envelopeJSON = JSON.parse(JSON.stringify(bundle.dsseEnvelope));
+      const certBytes =
+        bundle.verificationMaterial?.x509CertificateChain?.certificates[0]
+          .rawBytes;
+      const certPEM = [PEM_HEADER, certBytes, PEM_FOOTER]
+        .join("\n")
+        .concat("\n");
+      envelopeJSON.signatures[0]["cert"] = certPEM;
+
+      console.log(certPEM);
+      console.log(JSON.stringify(envelopeJSON, null, "  "));
 
       // Write signed envelopes
       console.log(`Writing attestation ${att}`);

@@ -40526,6 +40526,8 @@ const signOptions = {
     oidcIssuer: "https://oauth2.sigstore.dev/auth",
     rekorBaseURL: sigstore.sigstore.DEFAULT_REKOR_BASE_URL,
 };
+const PEM_HEADER = "-----BEGIN CERTIFICATE-----";
+const PEM_FOOTER = "-----END CERTIFICATE-----";
 function generatePredicate(toolInputs, toolUri, toolPath) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`Generating predicate!`);
@@ -40574,6 +40576,7 @@ function generatePredicate(toolInputs, toolUri, toolPath) {
 }
 exports.generatePredicate = generatePredicate;
 function writeAttestations(layoutFile, predicate, outputFolder) {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         // Read SLSA output layout file.
         console.log(`Reading SLSA output file at ${layoutFile}!`);
@@ -40595,10 +40598,19 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 const attestationBuffer = Buffer.from(attestationJSON);
                 const bundle = yield sigstore.sigstore.signAttestation(attestationBuffer, "application/vnd.in-toto+json", signOptions);
                 // Write .sigstore bundle
-                // TODO: also write the normal attestation in slsa-verifier format
                 fs_1.default.mkdirSync(outputFolder, { recursive: true });
-                const outputFile = `${outputFolder}/${att}.sigstore`;
-                fs_1.default.writeFileSync(outputFile, `${JSON.stringify(bundle)}\n`);
+                const outputBundleFile = `${outputFolder}/${att}.sigstore`;
+                fs_1.default.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
+                // TODO: also write the normal attestation in slsa-verifier format
+                // const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
+                const envelopeJSON = JSON.parse(JSON.stringify(bundle.dsseEnvelope));
+                const certBytes = (_b = (_a = bundle.verificationMaterial) === null || _a === void 0 ? void 0 : _a.x509CertificateChain) === null || _b === void 0 ? void 0 : _b.certificates[0].rawBytes;
+                const certPEM = [PEM_HEADER, certBytes, PEM_FOOTER]
+                    .join("\n")
+                    .concat("\n");
+                envelopeJSON.signatures[0]["cert"] = certPEM;
+                console.log(certPEM);
+                console.log(JSON.stringify(envelopeJSON, null, "  "));
                 // Write signed envelopes
                 console.log(`Writing attestation ${att}`);
                 console.log(JSON.stringify(bundle));
