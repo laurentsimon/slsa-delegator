@@ -40596,6 +40596,7 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 const bundle = yield sigstore.sigstore.signAttestation(attestationBuffer, "application/vnd.in-toto+json", signOptions);
                 // Write .sigstore bundle
                 // TODO: also write the normal attestation in slsa-verifier format
+                fs_1.default.mkdirSync(outputFolder, { recursive: true });
                 const outputFile = `${outputFolder}/${att}.sigstore`;
                 fs_1.default.writeFileSync(outputFile, `${JSON.stringify(bundle)}\n`);
                 // Write signed envelopes

@@ -94,6 +94,7 @@ export async function writeAttestations(
 
       // Write .sigstore bundle
       // TODO: also write the normal attestation in slsa-verifier format
+      fs.mkdirSync(outputFolder, { recursive: true });
       const outputFile = `${outputFolder}/${att}.sigstore`;
       fs.writeFileSync(outputFile, `${JSON.stringify(bundle)}\n`);
 
