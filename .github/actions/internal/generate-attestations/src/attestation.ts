@@ -45,7 +45,7 @@ export async function generatePredicate(
         },
         "buildConfig" :{
             "version": 1,
-            "inputs": "${toolInputs}",
+            "inputs": ${toolInputs},
             "tool": "${toolPath}"
         },
         "materials": [

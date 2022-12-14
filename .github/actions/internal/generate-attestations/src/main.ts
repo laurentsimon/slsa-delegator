@@ -25,7 +25,7 @@ async function run(): Promise<void> {
     console.log(`Using SLSA output file at ${safe_join}!`);
 
     // Generate the predicate.
-    const predicate = await generatePredicate(slsaOutputs, toolUri, toolPath);
+    const predicate = await generatePredicate(toolInputs, toolUri, toolPath);
     console.log(predicate.toString());
 
     // Attach subjects and generate attestation files

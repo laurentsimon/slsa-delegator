@@ -243,7 +243,7 @@ jobs:
         id: sign
         uses: laurentsimon/slsa-delegator/.github/actions/internal/generate-attestations@main
         with:
-          slsa-outputs-file: ${{ needs.build-artifacts-ubuntu.outputs.outputs }}
+          slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
           tool-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
           tool-uri: ${{ needs.validate-token.outputs.tool-uri }}
           tool-path: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
