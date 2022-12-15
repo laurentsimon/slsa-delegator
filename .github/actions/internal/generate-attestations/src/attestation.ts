@@ -102,8 +102,7 @@ export async function writeAttestations(
         bundle.verificationMaterial?.x509CertificateChain?.certificates[0]
           .rawBytes || "";
       const lines = certBytes.match(/.{1,64}/g) || "";
-      let certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\n").concat("\n");
-      certPEM = JSON.stringify(certPEM);
+      const certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\n").concat("");
 
       const base64Cert = Buffer.from(certPEM).toString("base64");
 
