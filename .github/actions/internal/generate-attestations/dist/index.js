@@ -40602,12 +40602,14 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 const envelopeJSON = JSON.parse(JSON.stringify(bundle.dsseEnvelope));
                 const certBytes = ((_b = (_a = bundle.verificationMaterial) === null || _a === void 0 ? void 0 : _a.x509CertificateChain) === null || _b === void 0 ? void 0 : _b.certificates[0].rawBytes) || "";
                 const lines = certBytes.match(/.{1,64}/g) || "";
-                let certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\n").concat("");
+                let certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\n").concat("\n");
                 console.log(certPEM);
                 const base64Cert = Buffer.from(certPEM).toString("base64");
-                certPEM = JSON.stringify(certPEM.replace(/\n/g, "\\n"));
+                certPEM = certPEM.replace(/\n/g, "\\n");
                 console.log(certPEM);
-                envelopeJSON.signatures[0]["cert"] = "certPEM";
+                certPEM = JSON.stringify(certPEM);
+                console.log(certPEM);
+                envelopeJSON.signatures[0]["cert"] = certPEM;
                 const envelopeStr = JSON.stringify(envelopeJSON).replace(/"/g, '\\"');
                 // Upload to tlog with the augmented format.
                 const intoto = `{
