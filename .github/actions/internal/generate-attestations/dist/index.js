@@ -40642,7 +40642,7 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 fs_1.default.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
                 // Write .jsonl for slsa-verifier
                 const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
-                fs_1.default.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
+                fs_1.default.writeFileSync(outputDSSEfile, `${envelopeJSON}\n`);
                 // Log debug
                 console.log(`Writing attestation ${att}`);
                 console.log(JSON.stringify(bundle));

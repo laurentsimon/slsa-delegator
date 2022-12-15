@@ -155,7 +155,7 @@ export async function writeAttestations(
 
       // Write .jsonl for slsa-verifier
       const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
-      fs.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
+      fs.writeFileSync(outputDSSEfile, `${envelopeJSON}\n`);
 
       // Log debug
       console.log(`Writing attestation ${att}`);
