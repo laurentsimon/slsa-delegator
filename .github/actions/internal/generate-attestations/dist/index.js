@@ -40604,7 +40604,7 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 const lines = certBytes.match(/.{1,64}/g) || "";
                 let certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\n").concat("");
                 const base64Cert = Buffer.from(certPEM).toString("base64");
-                certPEM = JSON.stringify(certPEM.replace(/\n/g, "\\n"));
+                certPEM = JSON.stringify(certPEM);
                 envelopeJSON.signatures[0]["cert"] = certPEM;
                 console.log(certPEM);
                 const envelopeStr = JSON.stringify(envelopeJSON).replace(/"/g, '\\"');

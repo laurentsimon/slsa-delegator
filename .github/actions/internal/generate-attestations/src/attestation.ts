@@ -106,7 +106,7 @@ export async function writeAttestations(
 
       const base64Cert = Buffer.from(certPEM).toString("base64");
 
-      certPEM = JSON.stringify(certPEM.replace(/\n/g, "\\n"));
+      certPEM = JSON.stringify(certPEM);
       envelopeJSON.signatures[0]["cert"] = certPEM;
 
       console.log(certPEM);
