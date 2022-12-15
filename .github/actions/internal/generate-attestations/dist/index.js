@@ -40602,8 +40602,7 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 const envelopeJSON = JSON.parse(JSON.stringify(bundle.dsseEnvelope));
                 const certBytes = ((_b = (_a = bundle.verificationMaterial) === null || _a === void 0 ? void 0 : _a.x509CertificateChain) === null || _b === void 0 ? void 0 : _b.certificates[0].rawBytes) || "";
                 const lines = certBytes.match(/.{1,64}/g) || "";
-                let certPEM = [...lines].join("\n").concat("");
-                certPEM = `${PEM_HEADER}\n${certPEM}\n${PEM_FOOTER}`;
+                let certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\n").concat("\n");
                 console.log(certPEM);
                 const base64Cert = Buffer.from(certPEM).toString("base64");
                 certPEM = JSON.stringify(certPEM);
