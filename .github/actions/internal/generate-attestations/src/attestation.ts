@@ -110,8 +110,7 @@ export async function writeAttestations(
 
       console.log(certPEM);
 
-      const envelopeStr = String.raw`${JSON.stringify(envelopeJSON)}`;
-      console.log(JSON.stringify(envelopeJSON, null, "  "));
+      const envelopeStr = JSON.stringify(JSON.stringify(envelopeJSON));
 
       // Upload to tlog with the augmented format.
       const intoto = `{"apiVersion":"0.0.1",

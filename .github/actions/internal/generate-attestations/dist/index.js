@@ -40608,8 +40608,7 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 const base64Cert = Buffer.from(certPEM).toString("base64");
                 envelopeJSON.signatures[0]["cert"] = certPEM;
                 console.log(certPEM);
-                const envelopeStr = String.raw `${JSON.stringify(envelopeJSON)}`;
-                console.log(JSON.stringify(envelopeJSON, null, "  "));
+                const envelopeStr = JSON.stringify(JSON.stringify(envelopeJSON));
                 // Upload to tlog with the augmented format.
                 const intoto = `{"apiVersion":"0.0.1",
         "kind":"intoto",
