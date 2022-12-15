@@ -119,7 +119,7 @@ export async function writeAttestations(
 
       const envelopeStr = JSON.stringify(envelopeJSON).replace(/"/g, '\\"');
 
-      envelopeJSON.signatures[0]["cert"] = certPEMJSON;
+      envelopeJSON.signatures[0]["cert"] = certPEM;
 
       // Upload to tlog with the augmented format.
       const intoto = `{
