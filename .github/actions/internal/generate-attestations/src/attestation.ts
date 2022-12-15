@@ -113,13 +113,14 @@ export async function writeAttestations(
       const envelopeStr = JSON.stringify(envelopeJSON).replace(/"/g, '\\"');
 
       // Upload to tlog with the augmented format.
-      const intoto = `{"apiVersion":"0.0.1",
+      const intoto = `{
+        "apiVersion":"0.0.1",
         "kind":"intoto",
         "spec":{
           "content":{
-            "envelope": "${envelopeStr}",
-            "publicKey":"${base64Cert}"
+            "envelope": "${envelopeStr}"
           }
+          "publicKey":"${base64Cert}"
         }
       }`;
       console.log(intoto);
