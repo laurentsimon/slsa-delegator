@@ -112,7 +112,7 @@ export async function writeAttestations(
 
       const envelopeStr = JSON.stringify(envelopeJSON)
         .replace(/"/g, '\\"')
-        .replace("/\n/g", "\\\n");
+        .replace(/\n/g, "\\n");
 
       // Upload to tlog with the augmented format.
       const intoto = `{
