@@ -40521,6 +40521,7 @@ exports.writeAttestations = exports.generatePredicate = void 0;
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const github_1 = __nccwpck_require__(9971);
 const sigstore = __importStar(__nccwpck_require__(5388));
+const node_fetch_1 = __importDefault(__nccwpck_require__(4198));
 const signOptions = {
     oidcClientID: "sigstore",
     oidcIssuer: "https://oauth2.sigstore.dev/auth",
@@ -40597,10 +40598,6 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 // Sign attestations with sigstore
                 const attestationBuffer = Buffer.from(attestationJSON);
                 const bundle = yield sigstore.sigstore.signAttestation(attestationBuffer, "application/vnd.in-toto+json", signOptions);
-                // Write .sigstore bundle
-                fs_1.default.mkdirSync(outputFolder, { recursive: true });
-                const outputBundleFile = `${outputFolder}/${att}.sigstore`;
-                fs_1.default.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
                 // TODO: also write the normal attestation in slsa-verifier format
                 const envelopeJSON = JSON.parse(JSON.stringify(bundle.dsseEnvelope));
                 const certBytes = ((_b = (_a = bundle.verificationMaterial) === null || _a === void 0 ? void 0 : _a.x509CertificateChain) === null || _b === void 0 ? void 0 : _b.certificates[0].rawBytes) || "";
@@ -40608,12 +40605,37 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 const certPEM = [PEM_HEADER, ...lines, PEM_FOOTER]
                     .join("\n")
                     .concat("\n");
+                const base64Cert = Buffer.from(certPEM).toString("base64");
                 envelopeJSON.signatures[0]["cert"] = certPEM;
                 console.log(certPEM);
                 console.log(JSON.stringify(envelopeJSON, null, "  "));
+                // Upload to tlog with the augmented format.
+                const intoto = `{"apiVersion":"0.0.1",
+        "kind":"intoto",
+        "spec":{
+          "content":{
+            "envelope":${JSON.stringify(envelopeJSON)},
+            "publicKey":"${base64Cert}"
+        }
+      }`;
+                const response = yield (0, node_fetch_1.default)("https://rekor.sigstore.dev/api/v1/log/entries", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: intoto,
+                });
+                const data = yield response.json();
+                console.log(data);
+                // Write .jsonl for slsa-verifier
                 const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
                 fs_1.default.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
-                // Write signed envelopes
+                // Write .sigstore bundle
+                fs_1.default.mkdirSync(outputFolder, { recursive: true });
+                const outputBundleFile = `${outputFolder}/${att}.sigstore`;
+                fs_1.default.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
+                // Log debug
                 console.log(`Writing attestation ${att}`);
                 console.log(JSON.stringify(bundle));
             }

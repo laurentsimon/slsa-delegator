@@ -1,6 +1,7 @@
 import fs from "fs";
 import { context } from "@actions/github";
 import * as sigstore from "sigstore";
+import fetch from "node-fetch";
 
 const signOptions = {
   oidcClientID: "sigstore",
@@ -95,11 +96,6 @@ export async function writeAttestations(
         signOptions
       );
 
-      // Write .sigstore bundle
-      fs.mkdirSync(outputFolder, { recursive: true });
-      const outputBundleFile = `${outputFolder}/${att}.sigstore`;
-      fs.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
-
       // TODO: also write the normal attestation in slsa-verifier format
       const envelopeJSON = JSON.parse(JSON.stringify(bundle.dsseEnvelope));
       const certBytes =
@@ -109,15 +105,46 @@ export async function writeAttestations(
       const certPEM = [PEM_HEADER, ...lines, PEM_FOOTER]
         .join("\n")
         .concat("\n");
+      const base64Cert = Buffer.from(certPEM).toString("base64");
       envelopeJSON.signatures[0]["cert"] = certPEM;
 
       console.log(certPEM);
       console.log(JSON.stringify(envelopeJSON, null, "  "));
 
+      // Upload to tlog with the augmented format.
+      const intoto = `{"apiVersion":"0.0.1",
+        "kind":"intoto",
+        "spec":{
+          "content":{
+            "envelope":${JSON.stringify(envelopeJSON)},
+            "publicKey":"${base64Cert}"
+        }
+      }`;
+
+      const response = await fetch(
+        "https://rekor.sigstore.dev/api/v1/log/entries",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: intoto,
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+
+      // Write .jsonl for slsa-verifier
       const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
       fs.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
 
-      // Write signed envelopes
+      // Write .sigstore bundle
+      fs.mkdirSync(outputFolder, { recursive: true });
+      const outputBundleFile = `${outputFolder}/${att}.sigstore`;
+      fs.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
+
+      // Log debug
       console.log(`Writing attestation ${att}`);
       console.log(JSON.stringify(bundle));
     }
