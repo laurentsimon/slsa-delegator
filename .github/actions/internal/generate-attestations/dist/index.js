@@ -40613,6 +40613,7 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 certPEM = JSON.stringify(certPEM);
                 console.log(certPEM);
                 const envelopeStr = JSON.stringify(envelopeJSON).replace(/"/g, '\\"');
+                envelopeJSON.signatures[0]["cert"] = certPEM.replace(/\\n/g, "\n");
                 // Upload to tlog with the augmented format.
                 const intoto = `{
         "apiVersion":"0.0.1",
