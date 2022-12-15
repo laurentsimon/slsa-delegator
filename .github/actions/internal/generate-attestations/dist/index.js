@@ -40614,7 +40614,7 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
         "kind":"intoto",
         "spec":{
           "content":{
-            "envelope":${JSON.stringify(envelopeJSON)},
+            "envelope": "${JSON.stringify(envelopeJSON)}",
             "publicKey":"${base64Cert}"
           }
         }

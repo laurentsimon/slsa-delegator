@@ -116,7 +116,7 @@ export async function writeAttestations(
         "kind":"intoto",
         "spec":{
           "content":{
-            "envelope":${JSON.stringify(envelopeJSON)},
+            "envelope": "${JSON.stringify(envelopeJSON)}",
             "publicKey":"${base64Cert}"
           }
         }
