@@ -40605,9 +40605,9 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 let certPEM = [PEM_HEADER, ...lines, PEM_FOOTER].join("\n").concat("\n");
                 console.log(certPEM);
                 const base64Cert = Buffer.from(certPEM).toString("base64");
-                certPEM = JSON.stringify(certPEM);
+                certPEM = certPEM.replace(/\n/g, "\\n");
                 console.log(certPEM);
-                envelopeJSON.signatures[0]["cert"] = certPEM;
+                envelopeJSON.signatures[0]["cert"] = "certPEM";
                 const envelopeStr = JSON.stringify(envelopeJSON).replace(/"/g, '\\"');
                 // Upload to tlog with the augmented format.
                 const intoto = `{
