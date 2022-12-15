@@ -112,11 +112,10 @@ export async function writeAttestations(
 
       certPEM = certPEM.replace(/\n/g, "\\n");
       console.log(certPEM);
+      envelopeJSON.signatures[0]["cert"] = certPEM;
 
       certPEM = JSON.stringify(certPEM);
       console.log(certPEM);
-
-      envelopeJSON.signatures[0]["cert"] = certPEM;
 
       const envelopeStr = JSON.stringify(envelopeJSON).replace(/"/g, '\\"');
 
