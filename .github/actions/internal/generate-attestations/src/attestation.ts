@@ -118,8 +118,10 @@ export async function writeAttestations(
           "content":{
             "envelope":${JSON.stringify(envelopeJSON)},
             "publicKey":"${base64Cert}"
+          }
         }
       }`;
+      console.log(intoto);
 
       const response = await fetch(
         "https://rekor.sigstore.dev/api/v1/log/entries",

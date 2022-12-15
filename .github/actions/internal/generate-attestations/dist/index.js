@@ -40616,8 +40616,10 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
           "content":{
             "envelope":${JSON.stringify(envelopeJSON)},
             "publicKey":"${base64Cert}"
+          }
         }
       }`;
+                console.log(intoto);
                 const response = yield (0, node_fetch_1.default)("https://rekor.sigstore.dev/api/v1/log/entries", {
                     method: "POST",
                     headers: {
