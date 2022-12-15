@@ -109,6 +109,8 @@ export async function writeAttestations(
       envelopeJSON.signatures[0]["cert"] = certPEM;
 
       console.log(certPEM);
+
+      const envelopeStr = String.raw`${JSON.stringify(envelopeJSON)}`;
       console.log(JSON.stringify(envelopeJSON, null, "  "));
 
       // Upload to tlog with the augmented format.
@@ -116,7 +118,7 @@ export async function writeAttestations(
         "kind":"intoto",
         "spec":{
           "content":{
-            "envelope": "${JSON.stringify(envelopeJSON)}",
+            "envelope": "${envelopeStr}",
             "publicKey":"${base64Cert}"
           }
         }
@@ -137,14 +139,14 @@ export async function writeAttestations(
       const data = await response.json();
       console.log(data);
 
-      // Write .jsonl for slsa-verifier
-      const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
-      fs.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
-
       // Write .sigstore bundle
       fs.mkdirSync(outputFolder, { recursive: true });
       const outputBundleFile = `${outputFolder}/${att}.sigstore`;
       fs.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
+
+      // Write .jsonl for slsa-verifier
+      const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
+      fs.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
 
       // Log debug
       console.log(`Writing attestation ${att}`);

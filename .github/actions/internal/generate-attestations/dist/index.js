@@ -40608,13 +40608,14 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 const base64Cert = Buffer.from(certPEM).toString("base64");
                 envelopeJSON.signatures[0]["cert"] = certPEM;
                 console.log(certPEM);
+                const envelopeStr = String.raw `${JSON.stringify(envelopeJSON)}`;
                 console.log(JSON.stringify(envelopeJSON, null, "  "));
                 // Upload to tlog with the augmented format.
                 const intoto = `{"apiVersion":"0.0.1",
         "kind":"intoto",
         "spec":{
           "content":{
-            "envelope": "${JSON.stringify(envelopeJSON)}",
+            "envelope": "${envelopeStr}",
             "publicKey":"${base64Cert}"
           }
         }
@@ -40630,13 +40631,13 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
                 });
                 const data = yield response.json();
                 console.log(data);
-                // Write .jsonl for slsa-verifier
-                const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
-                fs_1.default.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
                 // Write .sigstore bundle
                 fs_1.default.mkdirSync(outputFolder, { recursive: true });
                 const outputBundleFile = `${outputFolder}/${att}.sigstore`;
                 fs_1.default.writeFileSync(outputBundleFile, `${JSON.stringify(bundle)}\n`);
+                // Write .jsonl for slsa-verifier
+                const outputDSSEfile = `${outputFolder}/${att}.jsonl`;
+                fs_1.default.writeFileSync(outputDSSEfile, `${JSON.stringify(envelopeJSON)}\n`);
                 // Log debug
                 console.log(`Writing attestation ${att}`);
                 console.log(JSON.stringify(bundle));
