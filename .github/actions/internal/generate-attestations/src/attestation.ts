@@ -119,7 +119,7 @@ export async function writeAttestations(
         "spec":{
           "content":{
             "envelope": "${envelopeStr}"
-          }
+          },
           "publicKey":"${base64Cert}"
         }
       }`;

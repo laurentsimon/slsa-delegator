@@ -40616,7 +40616,7 @@ function writeAttestations(layoutFile, predicate, outputFolder) {
         "spec":{
           "content":{
             "envelope": "${envelopeStr}"
-          }
+          },
           "publicKey":"${base64Cert}"
         }
       }`;
