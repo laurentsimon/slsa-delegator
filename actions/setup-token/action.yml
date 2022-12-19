@@ -118,6 +118,6 @@ runs:
 
       - name: Sign the token
         id: sign
-        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-token
+        uses: laurentsimon/slsa-delegator/.github/actions/sign-token@main
         with:
           slsa-raw-token: ${{ steps.generate.outputs.base64-unsigned-slsa-token }}
