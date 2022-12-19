@@ -1,0 +1,40 @@
+name: setup token
+
+description: 'setup token'
+
+inputs:
+  workflow-recipient:
+    description: 'the workflow filename that this token is intended for'
+    type: string
+    required: true
+
+  private-repository:
+    description: 'Set to true for private repositories.'
+    type: boolean
+    required: true
+
+  runner-label:
+    description: 'Runner label to use.'
+    type: choice
+    options: 
+        - ubuntu-latest
+    required: true
+
+  build-artifacts-action-path:
+    description: 'The action path to invoke. Example: ./actions/build-artifacts'
+    type: string
+    required: true
+
+  workflow-inputs:
+    description: 'The inputs to the tool reusable workflow'
+    type: string
+    required: true
+
+outputs:
+  base64-unsigned-token:
+    description: "Base64-encoded unsigned SLSA token"
+    value: ${{ steps.sign.outputs.base64-unsigned-slsa-token }}
+
+runs:
+  using: 'node16'
+  main: 'dist/main.js'
