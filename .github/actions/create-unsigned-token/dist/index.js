@@ -58,7 +58,6 @@ function run() {
             const buildArtifactsActionPath = core.getInput('build_artifacts_action_path');
             // The workflow inputs are represented as a JSON object theselves.
             const workflowsInputsText = core.getInput('workflow_inputs');
-            const workflowInputs = JSON.parse(workflowsInputsText);
             // Log the inputs for troubleshooting.
             core.info(`privateRepository: ${privateRepository}`);
             core.info(`runnerLabel: ${runnerLabel}`);
@@ -66,6 +65,7 @@ function run() {
             core.info(`buildArtifactsActionPath: ${buildArtifactsActionPath}`);
             core.info(`workflowsInputsText: ${workflowsInputsText}`);
             core.info(`workfowInputs: `);
+            const workflowInputs = JSON.parse(workflowsInputsText);
             const workflowInputsMap = new Map(Object.entries(workflowInputs));
             workflowInputsMap.forEach((value, key) => {
                 core.info(` ${key}: ${value}`);

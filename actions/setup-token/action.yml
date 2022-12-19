@@ -95,7 +95,7 @@ runs:
         uses: laurentsimon/slsa-delegator/.github/actions/create-unsigned-token@main
         with:
           workflow-recipient: ${{ inputs.slsa-workflow-recipient }}
-          private-repository: ${{ inputs.slsa-workflow-recipient }}
+          private-repository: ${{ inputs.slsa-private-repository }}
           runner-label: ${{ inputs.slsa-runner-label }}
           build-artifacts-action-path: ${{ inputs.slsa-build-artifacts-action-path }}
           workflow-inputs: ${{ inputs.slsa-workflow-inputs }}
