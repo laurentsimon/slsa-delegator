@@ -4,11 +4,10 @@ import * as sigstore from "sigstore";
 import { connected } from "process";
 
 const signOptions = {
-    oidcClientID: "sigstore",
-    oidcIssuer: "https://oauth2.sigstore.dev/auth",
-    rekorBaseURL: sigstore.sigstore.DEFAULT_REKOR_BASE_URL,
-  };
-
+  oidcClientID: "sigstore",
+  oidcIssuer: "https://oauth2.sigstore.dev/auth",
+  rekorBaseURL: sigstore.sigstore.DEFAULT_REKOR_BASE_URL,
+};
 
 async function run(): Promise<void> {
   try {
@@ -21,13 +20,13 @@ async function run(): Promise<void> {
         nodejs ./dist/index.js
     */
 
-    const workflowRecipient = core.getInput('slsa-workflow-recipient');
-    const privateRepository = core.getInput('slsa-private-repository');
-    const runnerLabel = core.getInput('slsa-runner-label');
-    const buildArtifactsActionPath = core.getInput('slsa-build-action-path');
+    const workflowRecipient = core.getInput("slsa-workflow-recipient");
+    const privateRepository = core.getInput("slsa-private-repository");
+    const runnerLabel = core.getInput("slsa-runner-label");
+    const buildArtifactsActionPath = core.getInput("slsa-build-action-path");
     // The workflow inputs are represented as a JSON object theselves.
-    const workflowsInputsText = core.getInput('slsa-workflow-inputs')
-    
+    const workflowsInputsText = core.getInput("slsa-workflow-inputs");
+
     // Log the inputs for troubleshooting.
     core.info(`workflowsInputsText: ${workflowsInputsText}`);
     core.info(`workfowInputs: `);
@@ -50,7 +49,7 @@ async function run(): Promise<void> {
         audience: workflowRecipient,
       },
       github: {
-        context: github.context
+        context: github.context,
       },
       tool: {
         actions: {
@@ -67,18 +66,22 @@ async function run(): Promise<void> {
 
     // Prepare the base64 unsigned token.
     const unsignedToken = JSON.stringify(unsignedSlsaToken, undefined);
-    const unsignedB64Token = Buffer.from(unsignedToken).toString('base64');
+    const unsignedB64Token = Buffer.from(unsignedToken).toString("base64");
     core.info(`unsignedToken: ${unsignedToken}`);
     core.info(`unsignedB64Token: ${unsignedB64Token}`);
-    
+
     // Sign and prepare the base64 bundle.
     const bundle = await sigstore.sigstore.sign(
-        Buffer.from(unsignedB64Token),signOptions
-      );
-    const bundleStr = JSON.stringify(bundle)
-    const bundleB64 = Buffer.from(bundleStr).toString('base64');
+      Buffer.from(unsignedB64Token),
+      signOptions
+    );
+    const bundleStr = JSON.stringify(bundle);
+    const bundleB64 = Buffer.from(bundleStr).toString("base64");
     core.info(`bundleStr: ${bundleStr}`);
     core.info(`bundleB64: ${bundleB64}`);
+
+    // Verify just to double check.
+    await sigstore.sigstore.verify(bundle, Buffer.from(unsignedB64Token));
 
     // Output the signed token.
     core.info(`slsa-token: ${bundleB64}.${unsignedB64Token}`);
