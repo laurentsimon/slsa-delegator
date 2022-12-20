@@ -41,7 +41,6 @@ inputs:
 outputs:
   slsa-token:
     description: "slsa token"
-    value: ${{ steps.sign.outputs.slsa-signed-token }}
 
 runs:
   using: 'node16'
