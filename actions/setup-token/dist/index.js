@@ -104,6 +104,7 @@ function run() {
             const unsignedB64Token = Buffer.from(unsignedToken).toString("base64");
             core.info(`unsignedToken: ${unsignedToken}`);
             core.info(`unsignedB64Token: ${unsignedB64Token}`);
+            core.info(`buffer: ${Buffer.from(unsignedB64Token)}`);
             // Sign and prepare the base64 bundle.
             const bundle = yield sigstore.sigstore.sign(Buffer.from(unsignedB64Token), signOptions);
             const bundleStr = JSON.stringify(bundle);
