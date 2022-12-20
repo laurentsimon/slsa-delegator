@@ -42,7 +42,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
 const sigstore = __importStar(__nccwpck_require__(9149));
-const fs = __importStar(__nccwpck_require__(7147));
 //import * as path from 'path';
 const signOptions = {
     oidcClientID: "sigstore",
@@ -112,12 +111,12 @@ function run() {
             core.info(`bundleStr: ${bundleStr}`);
             core.info(`bundleB64: ${bundleB64}`);
             // Save to file and read-back.
-            fs.writeFileSync("file.txt", unsignedB64Token);
-            const r = fs.readFileSync("file.txt");
-            core.info(`r: ${r}`);
-            if (r.toString() != unsignedB64Token) {
-                core.setFailed("files differ");
-            }
+            // fs.writeFileSync("file.txt", unsignedB64Token);
+            // const r = fs.readFileSync("file.txt")
+            // core.info(`r: ${r}`)
+            // if (r.toString() != unsignedB64Token){
+            //     core.setFailed("files differ");
+            // }
             // Verify just to double check.
             yield sigstore.sigstore.verify(bundle, Buffer.from(unsignedB64Token));
             // Output the signed token.
