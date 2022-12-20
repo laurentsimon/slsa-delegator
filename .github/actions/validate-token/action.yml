@@ -98,11 +98,19 @@ runs:
           audience=$(cat raw_token.txt | base64 -d | jq -r '.builder.audience')
 
           # Extract the `context`, which is a pre-defined string.
-          # `SLSA integration framework`
+          # `SLSA delegator framework`
           context_string=$(cat raw_token.txt | base64 -d | jq -r '.context')
+          if [ "$context_string" != "SLSA delegator framework" ]; then
+            echo "Expected context string 'SLSA delegator framework', recieved '$context_string'"
+            exit 1
+          fi
 
           # Extract the version of the token.
-          context_string=$(cat raw_token.txt | base64 -d | jq -r '.version')
+          version=$(cat raw_token.txt | base64 -d | jq -r '.version')
+          if [ "$version" != "1" ]; then
+            echo "Expected version '1', recieved '$version'"
+            exit 1
+          fi
 
           # 2. Validate the audience matches the intended SLSA workflow receipient
           if [ "$audience" != "$SLSA_AUDIENCE" ]; then
@@ -114,10 +122,6 @@ runs:
           # We need to unmarshal the output and perform a deep compare.
           echo "github context:"
           echo ${GITHUB_CONTEXT} | jq -r
-
-          # Validate the version.
-
-          # Validate the context string.
           
           # 4. Output the verified token.
           validated_token="$(cat raw_token.txt | base64 -d | jq -c .)"

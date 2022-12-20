@@ -65,10 +65,6 @@ function run() {
             // The workflow inputs are represented as a JSON object theselves.
             const workflowsInputsText = core.getInput('slsa-workflow-inputs');
             // Log the inputs for troubleshooting.
-            core.info(`privateRepository: ${privateRepository}`);
-            core.info(`runnerLabel: ${runnerLabel}`);
-            core.info(`workflowRecipient: ${workflowRecipient}`);
-            core.info(`buildArtifactsActionPath: ${buildArtifactsActionPath}`);
             core.info(`workflowsInputsText: ${workflowsInputsText}`);
             core.info(`workfowInputs: `);
             const workflowInputs = JSON.parse(workflowsInputsText);
@@ -76,12 +72,12 @@ function run() {
             workflowInputsMap.forEach((value, key) => {
                 core.info(` ${key}: ${value}`);
             });
-            const payload = JSON.stringify(github.context.payload, undefined, 2);
-            core.info(`The event payload: ${payload}`);
+            // const payload = JSON.stringify(github.context.payload, undefined, 2);
+            // core.info(`The event payload: ${payload}`);
             // Construct an unsigned SLSA token.
             const unsignedSlsaToken = {
                 version: 1,
-                context: "SLSA integration framework",
+                context: "SLSA delegator framework",
                 builder: {
                     "private-repository": true,
                     "runner-label": runnerLabel,
@@ -102,14 +98,19 @@ function run() {
                     inputs: workflowInputs,
                 },
             };
-            const token = JSON.stringify(unsignedSlsaToken, undefined);
-            core.info(`Raw unsigned SLSA token: ${token}`);
-            const bundle = yield sigstore.sigstore.sign(Buffer.from(token), signOptions);
+            // Prepare the base64 unsigned token.
+            const unsignedToken = JSON.stringify(unsignedSlsaToken, undefined);
+            const unsignedB64Token = Buffer.from(unsignedToken).toString('base64');
+            core.info(`unsignedToken: ${unsignedToken}`);
+            core.info(`unsignedB64Token: ${unsignedB64Token}`);
+            // Sign and preparse the base64 bundle.
+            const bundle = yield sigstore.sigstore.sign(Buffer.from(unsignedToken), signOptions);
             const bundleStr = JSON.stringify(bundle);
-            core.info(`bundle: ${bundleStr}`);
-            const b64Token = Buffer.from(bundleStr).toString('base64');
-            core.info(`Base64 unsigned SLSA token: ${b64Token}`);
-            core.setOutput("slsa-signed-token", b64Token);
+            const bundleB64 = Buffer.from(bundleStr).toString('base64');
+            core.info(`bundleStr: ${bundleStr}`);
+            core.info(`bundleB64: ${bundleB64}`);
+            // Output the signed token.
+            core.setOutput("slsa-signed-token", `${bundleB64}.${unsignedB64Token}`);
         }
         catch (error) {
             if (error instanceof Error) {
