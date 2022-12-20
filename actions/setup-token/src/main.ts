@@ -69,14 +69,12 @@ async function run(): Promise<void> {
 
     const token = JSON.stringify(unsignedSlsaToken, undefined);
     core.info(`Raw unsigned SLSA token: ${token}`);
-    const signedToken = await sigstore.sigstore.signBlob(
-        token,
-        "",
-        signOptions
+    const signedToken = await sigstore.sigstore.sign(
+        Buffer.from(token),signOptions
       );
-    const b64Token = Buffer.from(token, 'base64');
-    core.info(`Base64 unsigned SLSA token: ${b64Token}`);
-    core.setOutput("slsa-signed-token", b64Token);
+    //const b64Token = Buffer.from(signedToken, 'base64');
+    core.info(`Base64 unsigned SLSA token: ${signedToken}`);
+    core.setOutput("slsa-signed-token", signedToken);
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);
