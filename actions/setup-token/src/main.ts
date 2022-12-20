@@ -2,7 +2,7 @@ import * as github from "@actions/github";
 import * as core from "@actions/core";
 import * as sigstore from "sigstore";
 import { connected } from "process";
-import * as fs from 'fs';
+//import * as fs from 'fs';
 
 const signOptions = {
   oidcClientID: "sigstore",
@@ -82,12 +82,12 @@ async function run(): Promise<void> {
     core.info(`bundleB64: ${bundleB64}`);
 
     // Save to file and read-back.
-    fs.writeFileSync("file.txt", unsignedB64Token);
+    /*fs.writeFileSync("file.txt", unsignedB64Token);
     const r = fs.readFileSync("file.txt")
     core.info(`r: ${r}`)
     if (r.toString() != unsignedB64Token){
         core.setFailed("files differ");
-    }
+    }*/
 
     // Verify just to double check.
     //await sigstore.sigstore.verify(bundle, Buffer.from(unsignedB64Token));
