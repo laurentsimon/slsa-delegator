@@ -71,7 +71,6 @@ async function run(): Promise<void> {
     const unsignedB64Token = Buffer.from(unsignedToken).toString("base64");
     core.info(`unsignedToken: ${unsignedToken}`);
     core.info(`unsignedB64Token: ${unsignedB64Token}`);
-    core.info(`buffer: ${Buffer.from(unsignedB64Token)}`)
 
     // Sign and prepare the base64 bundle.
     const bundle = await sigstore.sigstore.sign(

@@ -70,7 +70,8 @@ runs:
           # ******* WARNING ***********
           # We MUST verify the identity from the cert and extract
           # the repo name and the ref and add it to the token.
-          ./bin/sigstore.js verify signature.txt raw_token.txt
+          # Disabled temporarily to debug.
+          # ./bin/sigstore.js verify signature.txt raw_token.txt
 
           # Extract the certificate PEM
           cat signature.txt | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
