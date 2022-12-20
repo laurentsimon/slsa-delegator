@@ -102,7 +102,7 @@ runs:
             exit 1
           fi
 
-          # Validate the GitHub context, which contains run ID, repository names, etc.
+          # TODO: Validate the GitHub context, which contains run ID, repository names, etc.
           # We need to unmarshal the output and perform a deep compare.
           echo "github context:"
           echo ${GITHUB_CONTEXT} | jq -r
