@@ -110,8 +110,8 @@ function run() {
             core.info(`bundleStr: ${bundleStr}`);
             core.info(`bundleB64: ${bundleB64}`);
             // Output the signed token.
-            core.info(`slsa-signed-token: ${bundleB64}.${unsignedB64Token}`);
-            core.setOutput("slsa-signed-token", `${bundleB64}.${unsignedB64Token}`);
+            core.info(`slsa-token: ${bundleB64}.${unsignedB64Token}`);
+            core.setOutput("slsa-token", `${bundleB64}.${unsignedB64Token}`);
         }
         catch (error) {
             if (error instanceof Error) {
