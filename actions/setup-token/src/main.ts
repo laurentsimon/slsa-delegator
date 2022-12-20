@@ -1,90 +1,49 @@
 import * as github from "@actions/github";
 import * as core from "@actions/core";
+import * as sigstore from "sigstore";
 
-const snakeToCamel = (str: string) =>
-  str
-    .toLowerCase()
-    .replace(/([-_][a-z])/g, (group) =>
-      group.toUpperCase().replace("-", "").replace("_", "")
-    );
+const signOptions = {
+    oidcClientID: "sigstore",
+    oidcIssuer: "https://oauth2.sigstore.dev/auth",
+    rekorBaseURL: sigstore.sigstore.DEFAULT_REKOR_BASE_URL,
+  };
 
 async function run(): Promise<void> {
   try {
     /* Test locally: 
-      export ACTION_INPUTS="$(cat ./ACTION_INPUTS.txt | jq -c)"
-      export WORKFLOW_INPUTS="$(cat ./WORKFLOW_INPUTS.txt | jq -c)"
-      TOOL_REPOSITORY=laurentsimon/slsa-delegated-tool
-      REF=main
+      export INPUT_PRIVATE_REPOSITORY=true
+      export INPUT_RUNNER_LABEL="ubuntu-latest"
+      export INPUT_WORKFLOW_RECIPIENT="laurentsimon/slsa-delegated-tool"
+      export INPUT_BUILD_ARIFACTS_ACTION_PATH="./actions/build-artifacts-composite"
+      export INPUT_WORKFLOW_INPUTS="{\n  \"name1\": \"value1\",\n  \"name2\": \"value2\",\n  \"private-repository\": true\n}"
+      export INPUT_WORKFLOW_INPUTS="{\"name1\":\"value1\",\"name2\":\"value2\",\"private-repository\":true}"
     */
 
-    // Read the Action inputs.
-    const actionInputs = process.env.ACTION_INPUTS;
-    if (!actionInputs) {
-      core.setFailed("No actionInputs found.");
-      return;
-    }
-    core.info(`Found Action inputs: ${actionInputs}`);
-
-    // Read the Workflow inputs.
-    const workflowsInputs = process.env.WORKFLOW_INPUTS;
-    if (!workflowsInputs) {
-      core.setFailed("No workflowsInputs found.");
-      return;
-    }
-    core.info(`Found Workflow inputs: ${workflowsInputs}`);
-
-    // Parse the Action inputs.
-    interface inputsObj {
-      slsaPrivateRepository: boolean;
-      slsaRunnerLabel: string;
-      slsaBuildArtifactsActionPath: string;
-      slsaWorkflowRecipient: string;
-      slsaWorkflowInputs: string;
-    }
-
-    const inputsObj: inputsObj = JSON.parse(
-      actionInputs,
-      function (key, value) {
-        const camelCaseKey = snakeToCamel(key);
-        // See https://stackoverflow.com/questions/68337817/is-it-possible-to-use-json-parse-to-change-the-keys-from-underscore-to-camelcase.
-        if (this instanceof Array || camelCaseKey === key) {
-          return value;
-        } else {
-          this[camelCaseKey] = value;
-        }
-      }
-    );
-    /* test*/
-    // const inputs = new Map(Object.entries(inputsObj));
-    // inputs.forEach((value, key) => {
-    //   core.info(`${key}: ${value}`);
-    // });
-
-    const workflowRecipient = inputsObj.slsaWorkflowRecipient;
-    const privateRepository = inputsObj.slsaPrivateRepository;
-    const runnerLabel = inputsObj.slsaRunnerLabel;
-    const buildArtifactsActionPath = inputsObj.slsaBuildArtifactsActionPath;
-    const tmpWorkflowInputs = inputsObj.slsaWorkflowInputs;
+    const workflowRecipient = core.getInput('slsa-workflow-recipient');
+    const privateRepository = core.getInput('slsa-private-repository');
+    const runnerLabel = core.getInput('slsa-runner-label');
+    const buildArtifactsActionPath = core.getInput('slsa-build-action-path');
     // The workflow inputs are represented as a JSON object theselves.
-    const workflowInputs: Map<string, string> = JSON.parse(tmpWorkflowInputs);
-
+    const workflowsInputsText = core.getInput('slsa-workflow-inputs')
+    
     // Log the inputs for troubleshooting.
     core.info(`privateRepository: ${privateRepository}`);
     core.info(`runnerLabel: ${runnerLabel}`);
     core.info(`workflowRecipient: ${workflowRecipient}`);
     core.info(`buildArtifactsActionPath: ${buildArtifactsActionPath}`);
-    core.info(`workfowInputs:`);
+    core.info(`workflowsInputsText: ${workflowsInputsText}`);
+    core.info(`workfowInputs: `);
+    const workflowInputs = JSON.parse(workflowsInputsText);
     const workflowInputsMap = new Map(Object.entries(workflowInputs));
     workflowInputsMap.forEach((value, key) => {
       core.info(` ${key}: ${value}`);
     });
 
-    //
     const payload = JSON.stringify(github.context.payload, undefined, 2);
     core.info(`The event payload: ${payload}`);
 
-    // Construct our raw token.
-    const rawSlsaToken = {
+    // Construct an unsigned SLSA token.
+    const unsignedSlsaToken = {
       version: 1,
       context: "SLSA integration framework",
       builder: {
@@ -101,13 +60,6 @@ async function run(): Promise<void> {
             path: buildArtifactsActionPath,
           },
         },
-        // WARNING: We shoud remove this:
-        // it's the validator's role to extract the
-        // repo / ref and add it to the token.
-        "reusable-workflow": {
-          repository: "laurentsimon/slsa-delegated-tool",
-          ref: "main",
-        },
         // TODO: grab the calling workflow here ?
         // We need it for policy authz and we should report it
         // somewhere. Where?
@@ -115,11 +67,16 @@ async function run(): Promise<void> {
       },
     };
 
-    const token = JSON.stringify(rawSlsaToken, undefined);
-    core.info(`Raw SLSA token: ${token}`);
-    const b64Token = btoa(token);
-    core.info(`Base64 raw SLSA token: ${b64Token}`);
-    core.setOutput("base64-slsa-token", b64Token);
+    const token = JSON.stringify(unsignedSlsaToken, undefined);
+    core.info(`Raw unsigned SLSA token: ${token}`);
+    const signedToken = await sigstore.sigstore.signBlob(
+        token,
+        "",
+        signOptions
+      );
+    const b64Token = Buffer.from(token, 'base64');
+    core.info(`Base64 unsigned SLSA token: ${b64Token}`);
+    core.setOutput("slsa-signed-token", b64Token);
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);
