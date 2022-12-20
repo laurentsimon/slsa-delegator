@@ -51,12 +51,12 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             /* Test locally:
-              export INPUT_PRIVATE_REPOSITORY=true
-              export INPUT_RUNNER_LABEL="ubuntu-latest"
-              export INPUT_WORKFLOW_RECIPIENT="laurentsimon/slsa-delegated-tool"
-              export INPUT_BUILD_ARIFACTS_ACTION_PATH="./actions/build-artifacts-composite"
-              export INPUT_WORKFLOW_INPUTS="{\n  \"name1\": \"value1\",\n  \"name2\": \"value2\",\n  \"private-repository\": true\n}"
-              export INPUT_WORKFLOW_INPUTS="{\"name1\":\"value1\",\"name2\":\"value2\",\"private-repository\":true}"
+                $ env INPUT_SLSA-WORKFLOW-RECIPIENT="laurentsimon/slsa-delegated-tool" \
+                INPUT_SLSA-PRIVATE-REPOSITORY=true \
+                INPUT_SLSA-RUNNER-LABEL="ubuntu-latest" \
+                INPUT_SLSA-BUILD-ACTION-PATH="./actions/build-artifacts-composite" \
+                INPUT_SLSA-WORKFLOW-INPUTS="{\"name1\":\"value1\",\"name2\":\"value2\",\"private-repository\":true}" \
+                nodejs ./dist/index.js
             */
             const workflowRecipient = core.getInput('slsa-workflow-recipient');
             const privateRepository = core.getInput('slsa-private-repository');
@@ -106,8 +106,8 @@ function run() {
             core.info(`Raw unsigned SLSA token: ${token}`);
             const bundle = yield sigstore.sigstore.sign(Buffer.from(token), signOptions);
             const bundleStr = JSON.stringify(bundle);
-            core.info(`bundle: ${bundle}`);
-            const b64Token = Buffer.from(bundleStr, 'base64');
+            core.info(`bundle: ${bundleStr}`);
+            const b64Token = Buffer.from(bundleStr).toString('base64');
             core.info(`Base64 unsigned SLSA token: ${b64Token}`);
             core.setOutput("slsa-signed-token", b64Token);
         }
