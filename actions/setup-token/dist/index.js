@@ -42,6 +42,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const github = __importStar(__nccwpck_require__(5438));
 const core = __importStar(__nccwpck_require__(2186));
 const sigstore = __importStar(__nccwpck_require__(9149));
+const fs = __importStar(__nccwpck_require__(7147));
+//import * as path from 'path';
 const signOptions = {
     oidcClientID: "sigstore",
     oidcIssuer: "https://oauth2.sigstore.dev/auth",
@@ -109,8 +111,15 @@ function run() {
             const bundleB64 = Buffer.from(bundleStr).toString("base64");
             core.info(`bundleStr: ${bundleStr}`);
             core.info(`bundleB64: ${bundleB64}`);
+            // Save to file and read-back.
+            fs.writeFileSync("file.txt", unsignedB64Token);
+            const r = fs.readFileSync("file.txt");
+            core.info(`r: ${r}`);
+            if (r.toString() != unsignedB64Token) {
+                core.setFailed("files differ");
+            }
             // Verify just to double check.
-            //await sigstore.sigstore.verify(bundle, Buffer.from(unsignedB64Token));
+            yield sigstore.sigstore.verify(bundle, Buffer.from(unsignedB64Token));
             // Output the signed token.
             core.info(`slsa-token: ${bundleB64}.${unsignedB64Token}`);
             core.setOutput("slsa-token", `${bundleB64}.${unsignedB64Token}`);
@@ -35263,14 +35272,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 const crypto_1 = __nccwpck_require__(6113);
-const fs_1 = __importDefault(__nccwpck_require__(7147));
-const path_1 = __importDefault(__nccwpck_require__(1017));
 const util_1 = __nccwpck_require__(6901);
 // Returns the set of trusted log keys which can be used to verify the
 // Signed Entry Timestamps in the log.
 function getKeys() {
     // TODO: This should be be loaded via TUF
-    const pem = fs_1.default.readFileSync(path_1.default.resolve(__dirname, '../../store/rekor.pub'), 'utf-8');
+    const pem = `
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2G2Y+2tabdTV5BcGiBIx0a9fAFwr
+kBbmLSGtks4L3qX6yYY0zufBnhC8Ur/iy55GhWP/9A/bY2LhC30M9+RYtw==
+-----END PUBLIC KEY-----
+    `
     const key = (0, crypto_1.createPublicKey)(pem);
     // Calculate logID from the key
     const logID = getLogID(key);
