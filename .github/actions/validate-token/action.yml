@@ -60,8 +60,8 @@ runs:
           echo "token: $SLSA_TOKEN"
           # 1. Verify signature.
           npm ci && npm run build
-          echo $SLSA_TOKEN| cut -d '.' -f1 | base64 -d > signature.txt
-          echo $SLSA_TOKEN| cut -d '.' -f2 > raw_token.txt
+          echo -n $SLSA_TOKEN| cut -d '.' -f1 | base64 -d > signature.txt
+          echo -n $SLSA_TOKEN| cut -d '.' -f2 > raw_token.txt
           echo "raw:"
           cat raw_token.txt
           echo "signature:"
