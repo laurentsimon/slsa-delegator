@@ -73,7 +73,7 @@ async function run(): Promise<void> {
     
     // Sign and prepare the base64 bundle.
     const bundle = await sigstore.sigstore.sign(
-        Buffer.from(unsignedToken),signOptions
+        Buffer.from(unsignedB64Token),signOptions
       );
     const bundleStr = JSON.stringify(bundle)
     const bundleB64 = Buffer.from(bundleStr).toString('base64');

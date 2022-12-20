@@ -94,9 +94,6 @@ runs:
           # Extract GitHub context from token
           run_id=$(cat raw_token.txt | base64 -d | jq -r '.github.context.runId')
 
-          # Extract audience from token
-          audience=$(cat raw_token.txt | base64 -d | jq -r '.builder.audience')
-
           # Extract the `context`, which is a pre-defined string.
           # `SLSA delegator framework`
           context_string=$(cat raw_token.txt | base64 -d | jq -r '.context')
@@ -105,25 +102,27 @@ runs:
             exit 1
           fi
 
-          # Extract the version of the token.
-          version=$(cat raw_token.txt | base64 -d | jq -r '.version')
-          if [ "$version" != "1" ]; then
-            echo "Expected version '1', recieved '$version'"
-            exit 1
-          fi
+          # Validate the GitHub context, which contains run ID, repository names, etc.
+          # We need to unmarshal the output and perform a deep compare.
+          echo "github context:"
+          echo ${GITHUB_CONTEXT} | jq -r
 
-          # 2. Validate the audience matches the intended SLSA workflow receipient
+          # Extract audience from token
+          # Validate the audience matches the intended SLSA workflow receipient
+          audience=$(cat raw_token.txt | base64 -d | jq -r '.builder.audience')
           if [ "$audience" != "$SLSA_AUDIENCE" ]; then
             echo "Expected SLSA audience $SLSA_AUDIENCE, recieved $audience"
             exit 1
           fi
 
-          # 3. Validate the GitHub context, which contains run ID, repository names, etc.
-          # We need to unmarshal the output and perform a deep compare.
-          echo "github context:"
-          echo ${GITHUB_CONTEXT} | jq -r
-          
-          # 4. Output the verified token.
+          # Extract the version of the token.
+          version=$(cat raw_token.txt | base64 -d | jq -r '.version')
+          if [ "$version" != "1" ]; then
+            echo "Expected version '1', received '$version'"
+            exit 1
+          fi
+
+          # Output the verified token.
           validated_token="$(cat raw_token.txt | base64 -d | jq -c .)"
           echo "validated-token: $validated_token"
           echo "slsa-validated-token=$validated_token" >> "$GITHUB_OUTPUT"
