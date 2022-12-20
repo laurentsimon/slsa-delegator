@@ -103,13 +103,14 @@ function run() {
             const unsignedB64Token = Buffer.from(unsignedToken).toString('base64');
             core.info(`unsignedToken: ${unsignedToken}`);
             core.info(`unsignedB64Token: ${unsignedB64Token}`);
-            // Sign and preparse the base64 bundle.
+            // Sign and prepare the base64 bundle.
             const bundle = yield sigstore.sigstore.sign(Buffer.from(unsignedToken), signOptions);
             const bundleStr = JSON.stringify(bundle);
             const bundleB64 = Buffer.from(bundleStr).toString('base64');
             core.info(`bundleStr: ${bundleStr}`);
             core.info(`bundleB64: ${bundleB64}`);
             // Output the signed token.
+            core.info(`slsa-signed-token: ${bundleB64}.${unsignedB64Token}`);
             core.setOutput("slsa-signed-token", `${bundleB64}.${unsignedB64Token}`);
         }
         catch (error) {
