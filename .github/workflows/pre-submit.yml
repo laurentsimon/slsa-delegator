@@ -25,7 +25,7 @@ jobs:
 
       - env:
           SLSA_TOKEN: ${{ steps.setup.outputs.slsa-token }}
-          CONTEXT: ${{ github }}
+          CONTEXT: ${{ toJson(github) }}
         run: |
           set -euo pipefail
 
@@ -47,6 +47,7 @@ jobs:
           private_repository=$(echo "$decoded_token" | jq -r '.builder."private-repository"')
           action_path=$(echo "$decoded_token" | jq -r '.tool.actions."build-artifacts".path')
           inputs=$(echo "$decoded_token" | jq -rc '.tool.inputs')
+
           run_attempt=$(echo "$decoded_token" | jq -r '.github.run_attempt')
           run_id=$(echo "$decoded_token" | jq -r '.github.run_id')
           run_number=$(echo "$decoded_token" | jq -r '.github.run_number')
