@@ -67,6 +67,20 @@ runs:
           echo "signature:"
           cat signature.txt
 
+          # TODO: verify the properties below from
+          # token and / or certificate.
+          # "workflow": "example-sha",
+          # "sha": "example-sha",
+          # "repository": "octo-org/octo-repo",
+          # "repository_owner": "octo-org",
+          # "actor_id": "12",
+          # "repository_visibility": private,
+          # "repository_id": "74",
+          # "repository_owner_id": "65",
+          # "run_id": "example-run-id",
+          # "run_number": "10",
+          # "run_attempt": "2",
+
           # ******* WARNING ***********
           # We MUST verify the identity from the cert and extract
           # the repo name and the ref and add it to the token.

@@ -3,7 +3,6 @@ import * as core from "@actions/core";
 import * as sigstore from "sigstore";
 import { connected } from "process";
 import * as fs from 'fs';
-//import * as path from 'path';
 
 const signOptions = {
   oidcClientID: "sigstore",
@@ -82,16 +81,9 @@ async function run(): Promise<void> {
     core.info(`bundleStr: ${bundleStr}`);
     core.info(`bundleB64: ${bundleB64}`);
 
-    // Save to file and read-back.
-    // fs.writeFileSync("file.txt", unsignedB64Token);
-    // const r = fs.readFileSync("file.txt")
-    // core.info(`r: ${r}`)
-    // if (r.toString() != unsignedB64Token){
-    //     core.setFailed("files differ");
-    // }
-
     // Verify just to double check.
-    await sigstore.sigstore.verify(bundle, Buffer.from(unsignedB64Token));
+    // NOTE: this is an offline verification.
+    // await sigstore.sigstore.verify(bundle, Buffer.from(unsignedB64Token));
 
     // Output the signed token.
     core.info(`slsa-token: ${bundleB64}.${unsignedB64Token}`);
