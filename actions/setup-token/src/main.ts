@@ -77,7 +77,7 @@ async function run(): Promise<void> {
         // repository_owner_id: process.env.GITHUB_REPOSITORY_OWNER_ID,
         ref: process.env.GITHUB_REF,
         ref_type: process.env.GITHUB_REF_TYPE,
-        
+        actor: process.env.GITHUB_ACTOR,        
       },
       tool: {
         actions: {

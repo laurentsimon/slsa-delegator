@@ -53,7 +53,12 @@ jobs:
           run_number=$(echo "$decoded_token" | jq -r '.github.run_number')
           sha=$(echo "$decoded_token" | jq -r '.github.sha')
           workflow=$(echo "$decoded_token" | jq -r '.github.workflow')
-          gh_context=$(echo "$decoded_token" | jq -rc '.github.context')
+          event_name=$(echo "$decoded_token" | jq -r '.github.event_name')
+          repository=$(echo "$decoded_token" | jq -r '.github.repository')
+          repository_owner=$(echo "$decoded_token" | jq -r '.github.repository_owner')
+          ref=$(echo "$decoded_token" | jq -r '.github.ref')
+          ref_type=$(echo "$decoded_token" | jq -r '.github.ref_type')
+          actor=$(echo "$decoded_token" | jq -r '.github.actor')
 
           echo "audience: $audience"
           echo "runner_label: $runner_label"
@@ -65,8 +70,12 @@ jobs:
           echo "run_number: $run_number - $GITHUB_RUN_NUMBER"
           echo "sha: $sha - $GITHUB_SHA"
           echo "workflow: $workflow - $GITHUB_WORKFLOW"
-          echo "gh_context: $gh_context"
-          echo "CONTEXT: $CONTEXT"
+          echo "event_name: $event_name - $GITHUB_EVENT_NAME"
+          echo "repository: $repository - $GITHUB_REPOSITORY"
+          echo "repository_owner: $repository_owner - $GITHUB_REPOSITORY_OWNER"
+          echo "ref: $ref - $GITHUB_REF"
+          echo "ref_type: $ref_type - $GITHUB_REF_TYPE"
+          
 
           echo '0'
           [[ "$audience" == "delegator_generic_slsa3.yml" ]]
@@ -89,5 +98,14 @@ jobs:
           echo '9'
           [[ "$inputs" == '{"name1":"value1","name2":"value2","private-repository":true}' ]]
           echo '10'
-          [[ "$gh_context" == "(echo $CONTEXT | jq -rc)" ]]
+          [[ "$event_name" == "$GITHUB_EVENT_NAME" ]]
           echo '11'
+          [[ "$repository" == "$GITHUB_REPOSITORY" ]]
+          echo '12'
+          [[ "$repository_owner" == "$GITHUB_REPOSITORY_OWNER" ]]
+          echo '13'
+          [[ "$ref" == "$GITHUB_REF" ]]
+          echo '14'
+          [[ "$ref_type" == "$GITHUB_REF_TYPE" ]]
+          echo '15'
+         
