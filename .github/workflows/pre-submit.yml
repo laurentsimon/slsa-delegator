@@ -64,7 +64,8 @@ jobs:
           echo "sha: $sha - $GITHUB_SHA"
           echo "workflow: $workflow - $GITHUB_WORKFLOW"
 
-          [[ "$audience" == "delegated_generic_slsa3.yml" ]]
+          echo '0'
+          [[ "$audience" == "delegator_generic_slsa3.yml" ]]
           echo '1'
           [[ "$run_attempt" == "$GITHUB_RUN_ATTEMPT" ]]
           echo '2'
