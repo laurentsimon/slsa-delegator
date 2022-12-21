@@ -52,7 +52,7 @@ jobs:
           run_number=$(echo "$decoded_token" | jq -r '.github.run_number')
           sha=$(echo "$decoded_token" | jq -r '.github.sha')
           workflow=$(echo "$decoded_token" | jq -r '.github.workflow')
-          gh_context=$(echo "$decoded_token" | jq -r '.github.context')
+          gh_context=$(echo "$decoded_token" | jq -rc '.github.context')
 
           echo "audience: $audience"
           echo "runner_label: $runner_label"
@@ -88,5 +88,5 @@ jobs:
           echo '9'
           [[ "$inputs" == '{"name1":"value1","name2":"value2","private-repository":true}' ]]
           echo '10'
-          [[ "$gh_context" == "$CONTEXT" ]]
+          [[ "$gh_context" == "(echo $CONTEXT | jq -rc)" ]]
           echo '11'
