@@ -21,7 +21,7 @@ jobs:
           slsa-private-repository: true
           slsa-runner-label: "ubuntu-latest"
           slsa-build-action-path: "./actions/build-artifacts-composite"
-          slsa-workflow-inputs: "{\"name1\":\"value1\",\"name2\":\"value2\",\"private-repository\":true}"
+          slsa-workflow-inputs: '{"name1":"value1","name2":"value2","private-repository":true}'
 
       - env:
           SLSA_TOKEN: ${{ steps.setup.outputs.slsa-token }}
@@ -65,12 +65,22 @@ jobs:
           echo "workflow: $workflow - $GITHUB_WORKFLOW"
 
           [[ "$audience" == "delegated_generic_slsa3.yml" ]]
+          echo '1'
           [[ "$run_attempt" == "$GITHUB_RUN_ATTEMPT" ]]
+          echo '2'
           [[ "$run_number" == "$GITHUB_RUN_NUMBER" ]]
+          echo '3'
           [[ "$run_id" == "$GITHUB_RUN_ID" ]]
+          echo '4'
           [[ "$sha" == "$GITHUB_SHA" ]]
+          echo '5'
           [[ "$workflow" == "$GITHUB_WORKFLOW" ]]
+          echo '6'
           [[ "$runner_label" == "ubuntu-latest" ]]
+          echo '7'
           [[ "$private_repository" == "true" ]]
+          echo '8'
           [[ "$action_path" == "./actions/build-artifacts-composite" ]]
-          [[ "$inputs" == "{\"name1\":\"value1\",\"name2\":\"value2\",\"private-repository\":true}" ]]
+          echo '9'
+          [[ "$inputs" == '{"name1":"value1","name2":"value2","private-repository":true}' ]]
+          echo '10'
