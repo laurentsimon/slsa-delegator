@@ -85,3 +85,5 @@ jobs:
           echo '9'
           [[ "$inputs" == '{"name1":"value1","name2":"value2","private-repository":true}' ]]
           echo '10'
+          [[ "$gh_context" == "$CONTEXT" ]]
+          echo '11'
