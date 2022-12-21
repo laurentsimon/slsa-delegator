@@ -25,7 +25,7 @@ jobs:
 
       - env:
           SLSA_TOKEN: ${{ steps.setup.outputs.slsa-token }}
-          CONTEXT: ${{ github.context }}
+          CONTEXT: ${{ github }}
         run: |
           set -euo pipefail
 
@@ -52,7 +52,7 @@ jobs:
           run_number=$(echo "$decoded_token" | jq -r '.github.run_number')
           sha=$(echo "$decoded_token" | jq -r '.github.sha')
           workflow=$(echo "$decoded_token" | jq -r '.github.workflow')
-          gh_context=$(echo "$decoded_token" | jq -rc '.github.context')
+          gh_context=$(echo "$decoded_token" | jq -rc '.github')
 
           echo "audience: $audience"
           echo "runner_label: $runner_label"
