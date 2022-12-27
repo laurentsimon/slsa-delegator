@@ -76,40 +76,33 @@ jobs:
           echo "ref=main" >> "$GITHUB_OUTPUT" 
         #uses: slsa-framework/slsa-github-generator/.github/actions/detect-workflow@main
 
-  # validate-token validate the slsa token.
-  validate-token:
+  # verify-token verify the slsa token.
+  verify-token:
     outputs:
-      slsa-token: ${{ steps.validate.outputs.slsa-validated-token }}
-      tool-repository: ${{ steps.validate.outputs.tool-repository }}
-      tool-ref: ${{ steps.validate.outputs.tool-ref }}
-      tool-uri: ${{ steps.validate.outputs.tool-uri }}
+      slsa-verified-token: ${{ steps.verify.outputs.slsa-verified-token }}
+      tool-repository: ${{ steps.verify.outputs.tool-repository }}
+      tool-ref: ${{ steps.verify.outputs.tool-ref }}
+      tool-uri: ${{ steps.verify.outputs.tool-uri }}
     runs-on: ubuntu-latest
     needs: [detect-env]
     steps:
-      # TODO: use a secure builder checkout.
-      - name: Checkout the builder
+      - name: Verify the token
+        id: verify
         # This pin must be added to the release freezze reference pre-submits.
-        uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
-        with:
-          repository: ${{ needs.detect-env.outputs.repository }}
-          ref: ${{ needs.detect-env.outputs.ref }}
-
-      - name: Validate the token
-        id: validate
-        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/verify-token
+        uses: laurentsimon/slsa-delegator/.github/actions/verify-token@main
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
           slsa-token: ${{ inputs.slsa-token }}
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
-    if: fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label == 'ubuntu-latest'
+    if: fromJson(needs.verify-token.outputs.slsa-verified-token).builder.runner-label == 'ubuntu-latest'
     outputs:
       outputs: ${{ toJson(steps.build-artifacts-action.outputs) }}
       outputs-filename-sha256: ${{ steps.upload.outputs.outputs-filename-sha256 }}
     runs-on: ubuntu-latest
     # TODO: privacy-check, detect-env
-    needs: [detect-env, validate-token]
+    needs: [detect-env, verify-token]
     permissions:
       # TODO: we should avoid these permissions for build systems that 'run' dependency codes
       # during 'compilation': e.g., npm's install scripts.
@@ -118,8 +111,8 @@ jobs:
     steps:
       - name: debug
         env:
-          TOKEN: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
-          RUNNER: ${{ fromJson(needs.validate-token.outputs.slsa-token).builder.runner-label }}
+          TOKEN: ${{ toJson(needs.verify-token.outputs.slsa-verified-token) }}
+          RUNNER: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).builder.runner-label }}
         run: |
           echo "$TOKEN: $TOKEN"
           echo "$RUNNER: $RUNNER"
@@ -141,15 +134,15 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          repository: ${{ needs.validate-token.outputs.tool-repository }}
-          ref: ${{ needs.validate-token.outputs.tool-ref }}
+          repository: ${{ needs.verify-token.outputs.tool-repository }}
+          ref: ${{ needs.verify-token.outputs.tool-ref }}
           path: __TOOL_CHECKOUT_DIR__
       - run: mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
       # TODO: This should be part of the tool checkout Action.
       - name: Link the Action / create output folder
         env:
-          ACTION_PATH: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
+          ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build-artifacts.path }}
         run: |
           set -euo pipefail
          
@@ -189,27 +182,27 @@ jobs:
       #   # env:
       #   #   ACTION_DIR: __TOOL_ACTION_DIR__/build-artifacts
       #   env:
-      #     SLSA_TOKEN: ${{ toJson(needs.validate-token.outputs.slsa-token) }}
-      #     INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+      #     SLSA_TOKEN: ${{ toJson(needs.verify-token.outputs.slsa-verified-token) }}
+      #     INPUTS: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
       #   run: |
       #     echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE/__PROJECT_CHECKOUT_DIR__" >> $GITHUB_ENV
       #     echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
       #     ls -l
       #     ls ../__TOOL_ACTION_DIR__/
 
-      #     echo "slsa-token: $SLSA_TOKEN"
+      #     echo "slsa-verified-token: $SLSA_TOKEN"
       #     echo "inputs: $INPUTS"
 
       - name: Build artifacts
         id: build-artifacts-action
         env:
           # Note: JSON-formatted field need to use toJson().
-          SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+          SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
           SLSA_SECRETS: ${{ secrets.secrets }}
         uses: ./../__TOOL_ACTION_DIR__
         with:
           # TODO: move other inputs as arguments.
-          workflow-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+          workflow-inputs: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
           # workflow-secrets: ${{ secrets.secrets }}
           # TODO: if saved in file, this implies the Action is *not* a docker-based Action.
           slsa-outputs-file: ${{ github.workspace }}/../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
@@ -229,7 +222,7 @@ jobs:
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
-    needs: [validate-token, build-artifacts-ubuntu]
+    needs: [verify-token, build-artifacts-ubuntu]
     outputs:
       attestations-download-name: "slsa-attestations-XXXX"
     permissions:
@@ -246,9 +239,9 @@ jobs:
         uses: laurentsimon/slsa-delegator/.github/actions/internal/generate-attestations@main
         with:
           slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
-          tool-inputs: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
-          tool-uri: ${{ needs.validate-token.outputs.tool-uri }}
-          tool-path: ${{ fromJson(needs.validate-token.outputs.slsa-token).tool.actions.build-artifacts.path }}
+          tool-inputs: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
+          tool-uri: ${{ needs.verify-token.outputs.tool-uri }}
+          tool-path: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build-artifacts.path }}
 
       - name: Upload generated attestations
         id: upload
@@ -260,7 +253,7 @@ jobs:
       - name: Generate and sign
         id: generate-sign
         env:
-          SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.validate-token.outputs.slsa-token).tool.inputs) }}
+          SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
           BUILD_ARTIFACTS_OUTPUTS: ${{ needs.build-artifacts-ubuntu.outputs.outputs }}
           BUILD_ARTIFACTS_OUTPUTS_FILE: ${{ env.SLSA_ARTIFACTS_FILE }}
           BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256: ${{ needs.build-artifacts-ubuntu.outputs.outputs-filename-sha256 }}
