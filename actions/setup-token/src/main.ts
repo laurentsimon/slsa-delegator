@@ -57,12 +57,12 @@ async function run(): Promise<void> {
       version: 1,
       context: "SLSA delegator framework",
       builder: {
-        "private-repository": privateRepository,
-        "runner-label": runnerLabel,
+        "private_repository": privateRepository,
+        "runner_label": runnerLabel,
         audience: workflowRecipient,
       },
       github: {
-        // TODO: Re-evaluate if we need the context.
+        // TODO(#1410): Re-evaluate if we need the context.
         context: github,
         event_name: process.env.GITHUB_EVENT_NAME,
         run_attempt: process.env.GITHUB_RUN_ATTEMPT,
@@ -72,16 +72,16 @@ async function run(): Promise<void> {
         sha: process.env.GITHUB_SHA,
         repository: process.env.GITHUB_REPOSITORY,
         repository_owner: process.env.GITHUB_REPOSITORY_OWNER,
-        // TODO: enable if these become available.
+        // TODO(#1411): Record if these become available.
         // repository_id: process.env.GITHUB_REPOSITORY_ID,
         // repository_owner_id: process.env.GITHUB_REPOSITORY_OWNER_ID,
         ref: process.env.GITHUB_REF,
         ref_type: process.env.GITHUB_REF_TYPE,
-        actor: process.env.GITHUB_ACTOR,        
+        actor: process.env.GITHUB_ACTOR,
       },
       tool: {
         actions: {
-          "build-artifacts": {
+          "build_artifacts": {
             path: buildArtifactsActionPath,
           },
         },

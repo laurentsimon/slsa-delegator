@@ -42,12 +42,14 @@ jobs:
           echo "decoded_token:"
           echo "$decoded_token"
 
+          # Non-GitHub's information.
           audience=$(echo "$decoded_token" | jq -r '.builder.audience')
           runner_label=$(echo "$decoded_token" | jq -r '.builder."runner-label"')
           private_repository=$(echo "$decoded_token" | jq -r '.builder."private-repository"')
           action_path=$(echo "$decoded_token" | jq -r '.tool.actions."build-artifacts".path')
           inputs=$(echo "$decoded_token" | jq -rc '.tool.inputs')
-
+          
+          # GitHub's information.
           run_attempt=$(echo "$decoded_token" | jq -r '.github.run_attempt')
           run_id=$(echo "$decoded_token" | jq -r '.github.run_id')
           run_number=$(echo "$decoded_token" | jq -r '.github.run_number')
