@@ -92,7 +92,7 @@ jobs:
         uses: laurentsimon/slsa-delegator/.github/actions/verify-token@main
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
-          slsa-token: ${{ inputs.slsa-token }}
+          slsa-unverified-token: ${{ inputs.slsa-token }}
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
