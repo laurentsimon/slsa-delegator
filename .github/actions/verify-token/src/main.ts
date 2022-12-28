@@ -137,7 +137,7 @@ async function run(): Promise<void> {
     core.setOutput("tool-repository", toolRepository);
     core.setOutput("tool-ref", toolRef);
     core.setOutput("tool-uri", toolURI);
-    core.setOutput("slsa-verified-token", rawToken);
+    core.setOutput("slsa-verified-token", rawToken.toString());
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);
