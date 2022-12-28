@@ -14,6 +14,9 @@ env:
 
 jobs:
   verify-token:
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
@@ -58,7 +61,8 @@ jobs:
     needs: [verify-token]
     runs-on: ubuntu-latest
     # We use `== 'failure'` instead of ` != 'success'` because we want to ignore skipped jobs, if there are any.
-    if: github.event_name != 'workflow_dispatch' && needs.verify-token.result != 'failure'
+    #if: github.event_name != 'workflow_dispatch' && needs.verify-token.result != 'failure'
+    if: needs.verify-token.result != 'failure'
     permissions:
       contents: read
       issues: write
@@ -72,7 +76,8 @@ jobs:
   if-failed:
     needs: [verify-token]
     runs-on: ubuntu-latest
-    if: always() && github.event_name != 'workflow_dispatch' && needs.verify-token.result == 'failure'
+    #if: always() && github.event_name != 'workflow_dispatch' && needs.verify-token.result == 'failure'
+    if: always() && needs.verify-token.result == 'failure'
     permissions:
       contents: read
       issues: write
