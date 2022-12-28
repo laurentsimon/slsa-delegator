@@ -30,7 +30,7 @@ ref=$(echo "$VERIFIED_TOKEN" | jq -r '.github.ref')
 ref_type=$(echo "$VERIFIED_TOKEN" | jq -r '.github.ref_type')
 actor=$(echo "$VERIFIED_TOKEN" | jq -r '.github.actor')
 
-e2e_assert_eq "elegator_generic_slsa3.yml" "$audience"
+e2e_assert_eq "delegator_generic_slsa3.yml" "$audience"
 e2e_assert_eq "$GITHUB_RUN_ATTEMPT" "$run_attempt"
 e2e_assert_eq "$GITHUB_RUN_NUMBER" "$run_number"
 e2e_assert_eq "$GITHUB_RUN_ID" "$run_id"
