@@ -94,7 +94,7 @@ jobs:
           output-predicate: predicate.json
       - name: Debug output predicate
         run: |
-          cat predicat.json |  jq -r
+          cat predicate.json |  jq -r
       - name: Verify the token
         id: verify
         # This pin must be added to the release freezze reference pre-submits.
