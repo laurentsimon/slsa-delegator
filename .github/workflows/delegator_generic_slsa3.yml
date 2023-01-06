@@ -86,11 +86,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-env]
     steps:
-      - name: Dump context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
+      - name: Verify token with test action
+        uses: asraa/slsa-github-generator/.github/actions/verify-token@add-slsa-predicate
+        with:
+          slsa-workflow-recipient: "delegator_generic_slsa3.yml"
+          slsa-unverified-token: ${{ inputs.slsa-token }}
       - name: Verify the token
         id: verify
         # This pin must be added to the release freezze reference pre-submits.
