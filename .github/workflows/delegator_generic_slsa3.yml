@@ -91,6 +91,10 @@ jobs:
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
           slsa-unverified-token: ${{ inputs.slsa-token }}
+          output-predicate: predicate.json
+      - name: Debug output predicate
+        run: |
+          cat predicat.json |  jq -r
       - name: Verify the token
         id: verify
         # This pin must be added to the release freezze reference pre-submits.
