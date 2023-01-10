@@ -39,6 +39,10 @@ on:
         description: "The SLSA token identifying the request"
         required: true
         type: string
+      token:
+        description: "GitHub token"
+        required: false
+        default: ${{ github.token }}
     outputs:
       build-artifacts-outputs:
         description: "The outputs from the build-artitacts Action, unchanged."
@@ -92,6 +96,7 @@ jobs:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
           slsa-unverified-token: ${{ inputs.slsa-token }}
           output-predicate: predicate.json
+          token: ${{ inputs.token }}
       - name: Debug output predicate
         run: |
           cat predicate.json |  jq -r
