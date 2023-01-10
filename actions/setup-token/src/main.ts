@@ -81,7 +81,7 @@ async function run(): Promise<void> {
       },
       tool: {
         actions: {
-          "build_artifacts": {
+          build_artifacts: {
             path: buildArtifactsActionPath,
           },
         },
@@ -99,7 +99,7 @@ async function run(): Promise<void> {
     core.info(`unsignedB64Token: ${unsignedB64Token}`);
 
     // Sign and prepare the base64 bundle.
-    const eventName = process.env["GITHUB_EVENT_NAME"] || "";
+    const eventName = process.env.GITHUB_EVENT_NAME || "";
     let bundleStr = "";
     if (eventName === "pull_request") {
       bundleStr = "PLACEHOLDER_SIGNATURE";
@@ -127,7 +127,7 @@ async function run(): Promise<void> {
     if (error instanceof Error) {
       core.setFailed(error.message);
     } else {
-      core.info(`Unexpected error: ${error}`);
+      core.setFailed(`Unexpected error: ${error}`);
     }
   }
 }
