@@ -104,7 +104,7 @@ jobs:
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
-    if: fromJson(needs.verify-token.outputs.slsa-verified-token).builder.runner-label == 'ubuntu-latest'
+    if: fromJson(needs.verify-token.outputs.slsa-verified-token).builder.runner_label == 'ubuntu-latest'
     outputs:
       outputs: ${{ toJson(steps.build-artifacts-action.outputs) }}
       outputs-filename-sha256: ${{ steps.upload.outputs.outputs-filename-sha256 }}
