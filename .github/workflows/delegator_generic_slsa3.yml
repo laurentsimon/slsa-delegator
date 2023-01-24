@@ -82,26 +82,24 @@ jobs:
       slsa-verified-token: ${{ steps.verify.outputs.slsa-verified-token }}
       tool-repository: ${{ steps.verify.outputs.tool-repository }}
       tool-ref: ${{ steps.verify.outputs.tool-ref }}
-      tool-uri: ${{ steps.verify.outputs.tool-uri }}
     runs-on: ubuntu-latest
     needs: [detect-env]
     steps:
       - name: Verify token with test action
-        uses: asraa/slsa-github-generator/.github/actions/verify-token@add-slsa-predicate
+        uses: slsa-framework/slsa-github-generator/.github/actions/verify-token@main
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
           slsa-unverified-token: ${{ inputs.slsa-token }}
-          output-predicate: predicate.json
+          output-predicate: predicate.json # TODO add rng
       - name: Debug output predicate
         run: |
           cat predicate.json |  jq -r
-      - name: Verify the token
-        id: verify
-        # This pin must be added to the release freezze reference pre-submits.
-        uses: laurentsimon/slsa-delegator/.github/actions/verify-token@main
+      - name: Upload predicate
+        id: upload
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3.1.1
         with:
-          slsa-workflow-recipient: "delegator_generic_slsa3.yml"
-          slsa-unverified-token: ${{ inputs.slsa-token }}
+          name: predicate.json
+          path: predicate.json
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
@@ -243,41 +241,33 @@ jobs:
         with:
           name: ${{ env.SLSA_ARTIFACTS_FILE }}-XXXX
 
+      - uses: actions/download-artifact@v3
+        with:
+          name: predicate.json
+
       - name: Generate attestations
-        id: sign
-        uses: laurentsimon/slsa-delegator/.github/actions/internal/generate-attestations@main
+        id: attestations
+        uses: slsa-framework/slsa-github-generator/.github/actions/generate-attestations@main
         with:
           slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
-          tool-inputs: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
-          tool-uri: ${{ needs.verify-token.outputs.tool-uri }}
-          tool-path: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build-artifacts.path }}
+          predicate-type: "https://slsa.dev/provenance/v1.0?draft"
+          predicate-file: predicate.json
+          output-folder: attestations
 
-      - name: Upload generated attestations
+      - name: Sign attestations
+        id: sign
+        uses: slsa-framework/slsa-github-generator/.github/actions/sign-attestations@main
+        with:
+          attestations: attestations
+          output-folder: outputs
+
+      - name: Upload
         id: upload
         uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3.1.1
         with:
-          name: "${{ steps.sign.outputs.output-folder }}"
-          path: "${{ steps.sign.outputs.output-folder }}"
+          name: outputs
+          path: outputs
 
-      - name: Generate and sign
-        id: generate-sign
-        env:
-          SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
-          BUILD_ARTIFACTS_OUTPUTS: ${{ needs.build-artifacts-ubuntu.outputs.outputs }}
-          BUILD_ARTIFACTS_OUTPUTS_FILE: ${{ env.SLSA_ARTIFACTS_FILE }}
-          BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256: ${{ needs.build-artifacts-ubuntu.outputs.outputs-filename-sha256 }}
-        run: |
-          echo "SLSA_TOOL_INPUTS: $SLSA_TOOL_INPUTS"
-          echo "BUILD_ARTIFACTS_OUTPUTS: $BUILD_ARTIFACTS_OUTPUTS"
-          echo "BUILD_ARTIFACTS_OUTPUTS_FILE: $BUILD_ARTIFACTS_OUTPUTS_FILE"
-          echo "BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256: $BUILD_ARTIFACTS_OUTPUTS_FILE_SHA256"
-
-          tree
-
-          cat "$BUILD_ARTIFACTS_OUTPUTS_FILE"
-
-          echo "generated and signed"
-          #TODO: add the Action path
 
 
   
