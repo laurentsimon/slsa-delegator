@@ -86,6 +86,7 @@ jobs:
     needs: [detect-env]
     steps:
       - name: Verify token with test action
+        id: verify
         uses: slsa-framework/slsa-github-generator/.github/actions/verify-token@main
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
