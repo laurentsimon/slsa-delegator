@@ -246,7 +246,8 @@ jobs:
         #uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
-          name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
+          path: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
+          #name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
           #path: "${{ env.SLSA_ARTIFACTS_FILE }}"
           #sha256: ${{ needs.build-artifacts-ubuntu.outputs.artifacts-layout-sha256 }}
 
@@ -254,7 +255,8 @@ jobs:
         #uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
-          name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
+          path: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
+          #name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
           #path: ${{ env.SLSA_PREDICATE_FILE }}
           #sha256: ${{ needs.verify-token.outputs.predicate-sha256 }}
 
@@ -263,8 +265,10 @@ jobs:
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/generate-attestations
         with:
           # TODO: remove random value once secure-download is used.
-          slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}
+          #slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}
+          slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
           predicate-type: "https://slsa.dev/provenance/v1.0?draft"
+          #predicate-file: ${{ env.SLSA_PREDICATE_FILE }}
           predicate-file: ${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}
           output-folder: attestations
 
