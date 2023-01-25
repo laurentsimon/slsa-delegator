@@ -16,8 +16,12 @@ inputs:
   path:
     description: 'path'
     type: string
+    required: true
+
+  token:
+    description: "Token used to fetch the repository."
     required: false
-    default: __BUILDER_CHECKOUT_DIR__
+    default: ${{ github.token }}
 
 runs:
   using: 'composite'
@@ -28,9 +32,7 @@ runs:
       with:
         fetch-depth: 1
         persist-credentials: false
-        # Resolve repo / ref dynamically.
-        # Alternative: call the Action with a pin, and adds the pin to the reference release freeze checks:
-        # Faster runtime but more maintenance.
+        token: ${{ inputs.token }}
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
         path: ${{ inputs.path }}

@@ -23,7 +23,8 @@ defaults:
 
 env:
   SLSA_OUTPUTS_DIR: __SLSA_OUTPUTS_DIR__
-  SLSA_ARTIFACTS_FILE: artifacts.json
+  SLSA_ARTIFACTS_FILE: artifacts-layout.json
+  SLSA_PREDICATE_FILE: predicate.json
 
 on:
   workflow_call:
@@ -93,25 +94,30 @@ jobs:
       slsa-verified-token: ${{ steps.verify.outputs.slsa-verified-token }}
       tool-repository: ${{ steps.verify.outputs.tool-repository }}
       tool-ref: ${{ steps.verify.outputs.tool-ref }}
+      predicate-sha256: ${{ steps.upload.outputs.sha256 }}
     runs-on: ubuntu-latest
     needs: [privacy-check, rng, detect-env]
     steps:
       - name: Verify token with test action
         id: verify
+        #TODO: add to reference pre-submit.
         uses: slsa-framework/slsa-github-generator/.github/actions/verify-token@main
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
           slsa-unverified-token: ${{ inputs.slsa-token }}
-          output-predicate: predicate.json # TODO add rng
+          output-predicate: ${{ env.SLSA_PREDICATE_FILE }}
       - name: Debug output predicate
+        env: 
+          PREDICATE_FILE: ${{ env.SLSA_PREDICATE_FILE }}
         run: |
-          cat predicate.json |  jq -r
+          cat "$PREDICATE_FILE" |  jq -r
       - name: Upload predicate
         id: upload
-        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3.1.1
+        #TODO: add to reference pre-submit.
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
         with:
-          name: predicate.json
-          path: predicate.json
+          name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
+          path: ${{ env.SLSA_PREDICATE_FILE }}
 
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
@@ -119,7 +125,7 @@ jobs:
     if: fromJson(needs.verify-token.outputs.slsa-verified-token).builder.runner-label == 'ubuntu-latest'
     outputs:
       outputs: ${{ toJson(steps.build-artifacts-action.outputs) }}
-      outputs-filename-sha256: ${{ steps.upload.outputs.outputs-filename-sha256 }}
+      artifacts-layout-sha256: ${{ steps.upload.outputs.sha256 }}
     runs-on: ubuntu-latest
     permissions:
       # TODO: we should avoid these permissions for build systems that 'run' dependency code
@@ -135,31 +141,21 @@ jobs:
           echo "$TOKEN: $TOKEN"
           echo "$RUNNER: $RUNNER"
 
-      # - name: Checkout builder repository
-      #   uses: laurentsimon/slsa-delegator/.github/actions/secure-builder-checkout@main
-      #   with:
-      #     repository: "${{ needs.detect-env.outputs.repository }}"
-      #     ref: "${{ needs.detect-env.outputs.ref }}"
-      #     path: __BUILDER_CHECKOUT_DIR__
-
-      - name: Checkout the builder
-        # TODO: use a secure builder checkout.
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
+      # Checkout the builder and move it outside the workspace.
+      - name: Checkout builder repository
+        #TODO: add to reference pre-submit.
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
         with:
-          fetch-depth: 1
-          persist-credentials: false
-          repository: ${{ needs.detect-env.outputs.repository }}
-          ref: ${{ needs.detect-env.outputs.ref }}
+          repository: "${{ needs.detect-env.outputs.repository }}"
+          ref: "${{ needs.detect-env.outputs.ref }}"
           path: __BUILDER_CHECKOUT_DIR__
       - run: mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
-      # TODO: when updating folder's name: keep in mind that npm's typescript compiler complains if the names are too long: workspace/__BUILDER_CHECKOUT_DIR__
+      # Checkout the tool and move it outside the workspace.
       - name: Checkout the tool
-        # TODO: use a secure tool checkout.
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
+        #TODO: add to reference pre-submit.
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
         with:
-          fetch-depth: 1
-          persist-credentials: false
           repository: ${{ needs.verify-token.outputs.tool-repository }}
           ref: ${{ needs.verify-token.outputs.tool-ref }}
           path: __TOOL_CHECKOUT_DIR__
@@ -186,66 +182,33 @@ jobs:
           ls -l ../
           ls -l
 
-      # TODO: use secure checkout
       - name: Checkout the project repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
+        #TODO: add to reference pre-submit.
+        #TODO: try nested checkouts.
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-project-checkout@main
         with:
-          fetch-depth: 1
-          persist-credentials: false
-          #path: __PROJECT_CHECKOUT_DIR__
-
-      # TODO: https://goreleaser.com/errors/dirty/
-      # - name: Move the project repository
-      #   env:
-      #     REPOSITORY_NAME: ${{ github.event.repository.name }}
-      #   run: |
-      #     set -euo pipefail
-
-      #     ls __PROJECT_CHECKOUT_DIR__/
-      #     mv __PROJECT_CHECKOUT_DIR__/{.[!.],}* .
-
-      # - name: Test
-      #   # env:
-      #   #   ACTION_DIR: __TOOL_ACTION_DIR__/build-artifacts
-      #   env:
-      #     SLSA_TOKEN: ${{ toJson(needs.verify-token.outputs.slsa-verified-token) }}
-      #     INPUTS: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
-      #   run: |
-      #     echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE/__PROJECT_CHECKOUT_DIR__" >> $GITHUB_ENV
-      #     echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-      #     ls -l
-      #     ls ../__TOOL_ACTION_DIR__/
-
-      #     echo "slsa-verified-token: $SLSA_TOKEN"
-      #     echo "inputs: $INPUTS"
+          repository: ${{ needs.verify-token.outputs.tool-repository }}
+          ref: ${{ needs.verify-token.outputs.tool-ref }}
 
       - name: Build artifacts
         id: build-artifacts-action
-        env:
-          # Note: JSON-formatted field need to use toJson().
-          # SLSA_TOOL_INPUTS: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
-          # SLSA_SECRETS: ${{ secrets.secrets }}
-        uses: ../__TOOL_ACTION_DIR__
+        uses: ./../__TOOL_ACTION_DIR__
         with:
-          # TODO: move other inputs as arguments.
           slsa-workflow-inputs: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
           slsa-workflow-secrets: ${{ secrets.secrets }}
-          # TODO: if saved in file, this implies the Action is *not* a docker-based Action.
-          slsa-outputs-file: ../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          slsa-layout-file: ../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
 
-      - run: mv ../${{ env.SLSA_OUTPUTS_DIR }} ${{ env.SLSA_OUTPUTS_DIR }}
+      - name: Move artifact layout file to workspace
+        run: |
+          set -euo pipefail
+          mv "../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}" "${{ env.SLSA_ARTIFACTS_FILE }}"
 
-      # TODO: Use the secure upload
-      - uses: actions/upload-artifact@v3
+      - name: Upload artifact layout file
+        id: upload
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
         with:
           name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
-          path: "${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
-
-      - name: Upload securely the result
-        id: upload
-        run: |
-          echo "outputs-filename-sha256=abcdefg" >> "$GITHUB_OUTPUT"
-          # XXX indicates a random value, to ensure we don't collide with other workflow runs.
+          path: "${{ env.SLSA_ARTIFACTS_FILE }}"
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
@@ -256,14 +219,19 @@ jobs:
       id-token: write # Needed to sign
     runs-on: ubuntu-latest
     steps:
-      # TODO: secure download using ${{ needs.build-artifacts-ubuntu.outputs.outputs-filename-sha256 }}
-      - uses: actions/download-artifact@v3
+      - name: Download artifact layout file
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
         with:
           name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
+          path: "${{ env.SLSA_ARTIFACTS_FILE }}"
+          sha256: ${{ needs.build-artifacts-ubuntu.outputs.artifacts-layout-sha256 }}
 
-      - uses: actions/download-artifact@v3
+      - name: Download the predicate file
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
         with:
-          name: predicate.json
+          name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
+          path: ${{ env.SLSA_PREDICATE_FILE }}
+          sha256: ${{ needs.verify-token.outputs.predicate-sha256 }}
 
       - name: Generate attestations
         id: attestations
@@ -271,7 +239,7 @@ jobs:
         with:
           slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
           predicate-type: "https://slsa.dev/provenance/v1.0?draft"
-          predicate-file: predicate.json
+          predicate-file: ${{ env.SLSA_PREDICATE_FILE }}
           output-folder: attestations
 
       - name: Sign attestations
@@ -281,7 +249,8 @@ jobs:
           attestations: attestations
           output-folder: outputs
 
-      - name: Upload
+      # NOTE: we don't need to perform a secure upload, since the attestations are signed.
+      - name: Upload attestations
         id: upload
         uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3.1.1
         with:
