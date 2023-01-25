@@ -101,7 +101,7 @@ jobs:
         id: upload
         uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
         with:
-          name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
+          name: "${{ needs.rng.outputs.value }}-${{ env.SLSA_PREDICATE_FILE }}"
           path: ${{ env.SLSA_PREDICATE_FILE }}
 
   # build-artifacts-ubuntu builds the projects.
