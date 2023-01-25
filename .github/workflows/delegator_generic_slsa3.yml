@@ -162,7 +162,7 @@ jobs:
       - run: mv ./__BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
       - name: Checkout the tool
-        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-builder-checkout
+        uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-builder-checkout
         with:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
           ref: ${{ needs.verify-token.outputs.tool-ref }}
@@ -170,7 +170,7 @@ jobs:
       - run: mv ./__TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
       - name: Checkout the project repository
-        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-project-checkout
+        uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-project-checkout
 
       # NOTE: We keep the GITHUB_WORKSPACE clean so that the git tree is *not* dirty.
       - name: Setyp Action directory.
