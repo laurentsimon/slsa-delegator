@@ -209,9 +209,11 @@ jobs:
           mv "../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}" "${{ env.SLSA_ARTIFACTS_FILE }}"
 
       # NOTE: This serves 2 purposes:
-      # 1. Ensure the post checkout works
+      # 1. Ensure the post checkout works - only necessary for locally Actions.
       # 2. Ensure the __BUILDER_CHECKOUT_DIR__ is under GITHUB_WORKSPACE, as assumed by the `secure-upload-artifact` Action.
       - name: Reset directories
+        env:
+          ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build_artifacts.path }}
         run: |
           set -euo pipefail
 
