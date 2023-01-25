@@ -175,7 +175,8 @@ jobs:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
           ref: ${{ needs.verify-token.outputs.tool-ref }}
 
-      - name: Move project locations
+      # NOTE: We keep the GITHUB_WORKSPACE clean so that the git tree is *not* dirty.
+      - name: Setup directories
         env:
           ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build-artifacts.path }}
         run: |
@@ -211,6 +212,7 @@ jobs:
           slsa-workflow-secrets: ${{ secrets.secrets }}
           slsa-layout-file: ../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
 
+      # NOTE: Needed to upload the file.
       - name: Move artifact layout file to workspace
         run: |
           set -euo pipefail
