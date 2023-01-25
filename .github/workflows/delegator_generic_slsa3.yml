@@ -128,9 +128,10 @@ jobs:
 
       - name: Upload predicate
         id: upload
-        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
+        #uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
-          name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
+          #name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
           path: ${{ env.SLSA_PREDICATE_FILE }}
 
   # build-artifacts-ubuntu builds the projects.
@@ -222,7 +223,7 @@ jobs:
         #uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
-          name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
+          #name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
           path: "${{ env.SLSA_ARTIFACTS_FILE }}"
 
   # generate-provenance generates and signs the provenance.
