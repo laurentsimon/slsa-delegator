@@ -172,6 +172,7 @@ jobs:
           OUTPUTS: ${{ toJson(steps.build-artifacts-action.outputs) }}
         run: |
           echo "OUTPUTS: $(echo $OUTPUTS | base64 -w0| base64 -w0)"
+          echo "OUTPUTS: $OUTPUTS"
 
       # NOTE: Needed to upload the file.
       - name: Move artifact layout file to workspace
