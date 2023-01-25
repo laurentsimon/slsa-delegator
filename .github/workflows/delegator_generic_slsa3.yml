@@ -208,7 +208,7 @@ jobs:
         env:
           OUTPUTS: ${{ toJson(steps.build-artifacts-action.outputs) }}
         run: |
-          echo "OUTPUTS: $(echo $OUTPUTS | base64 | base64)"
+          echo "OUTPUTS: $(echo $OUTPUTS | base64 -w0| base64 -w0)"
 
       # NOTE: Needed to upload the file.
       - name: Move artifact layout file to workspace
@@ -241,22 +241,22 @@ jobs:
           repository: "${{ needs.detect-env.outputs.repository }}"
           ref: "${{ needs.detect-env.outputs.ref }}"
           path: __BUILDER_CHECKOUT_DIR__
-      - name: debug
-        run: |
-          tree
+
       - name: Download the artifact layout file
-        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
+        #uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
           path: "${{ env.SLSA_ARTIFACTS_FILE }}"
-          sha256: ${{ needs.build-artifacts-ubuntu.outputs.artifacts-layout-sha256 }}
+          #sha256: ${{ needs.build-artifacts-ubuntu.outputs.artifacts-layout-sha256 }}
 
       - name: Download the predicate file
-        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
+        #uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
           path: ${{ env.SLSA_PREDICATE_FILE }}
-          sha256: ${{ needs.verify-token.outputs.predicate-sha256 }}
+          #sha256: ${{ needs.verify-token.outputs.predicate-sha256 }}
 
       - name: Generate attestations
         id: attestations
