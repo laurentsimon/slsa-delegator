@@ -98,23 +98,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: [privacy-check, rng, detect-env]
     steps:
+      - name: Checkout builder
+        #TODO: add to reference pre-submit.
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
+          repository: "${{ needs.detect-env.outputs.repository }}"
+          ref: "${{ needs.detect-env.outputs.ref }}"
+          path: __BUILDER_CHECKOUT_DIR__
+
       - name: Verify token with test action
         id: verify
-        #TODO: add to reference pre-submit.
-        uses: slsa-framework/slsa-github-generator/.github/actions/verify-token@main
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/verify-token
         with:
           slsa-workflow-recipient: "delegator_generic_slsa3.yml"
           slsa-unverified-token: ${{ inputs.slsa-token }}
           output-predicate: ${{ env.SLSA_PREDICATE_FILE }}
+
       - name: Debug output predicate
         env: 
           PREDICATE_FILE: ${{ env.SLSA_PREDICATE_FILE }}
         run: |
           cat "$PREDICATE_FILE" |  jq -r
+
       - name: Upload predicate
         id: upload
-        #TODO: add to reference pre-submit.
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
         with:
           name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
           path: ${{ env.SLSA_PREDICATE_FILE }}
@@ -149,25 +156,37 @@ jobs:
           repository: "${{ needs.detect-env.outputs.repository }}"
           ref: "${{ needs.detect-env.outputs.ref }}"
           path: __BUILDER_CHECKOUT_DIR__
-      - run: mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
       # Checkout the tool and move it outside the workspace.
       - name: Checkout the tool
         #TODO: add to reference pre-submit.
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-builder-checkout
         with:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
           ref: ${{ needs.verify-token.outputs.tool-ref }}
           path: __TOOL_CHECKOUT_DIR__
-      - run: mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
-      # TODO: This should be part of the tool checkout Action.
-      - name: Link the Action / create output folder
+      - name: Checkout the project repository
+        #TODO: add to reference pre-submit.
+        #TODO: try nested checkouts.
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-project-checkout
+        with:
+          repository: ${{ needs.verify-token.outputs.tool-repository }}
+          ref: ${{ needs.verify-token.outputs.tool-ref }}
+
+      - name: Move project locations
         env:
           ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build-artifacts.path }}
         run: |
           set -euo pipefail
-         
+
+          # The builder repository (SRW).
+          mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
+
+          # The tool repository (TRW).
+          mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
+
+          # The action path to call (TRW).
           echo "ACTION_PATH=$ACTION_PATH"
           mkdir -p ../__TOOL_ACTION_DIR__
           echo ../__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/
@@ -175,20 +194,13 @@ jobs:
           mv ../__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/* ../__TOOL_ACTION_DIR__/
           ls ../__TOOL_ACTION_DIR__/
 
+          # Create the output directory.
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "SLSA_OUTPUTS_DIR: ../$SLSA_OUTPUTS_DIR"
           mkdir "../$SLSA_OUTPUTS_DIR"
 
           ls -l ../
           ls -l
-
-      - name: Checkout the project repository
-        #TODO: add to reference pre-submit.
-        #TODO: try nested checkouts.
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-project-checkout@main
-        with:
-          repository: ${{ needs.verify-token.outputs.tool-repository }}
-          ref: ${{ needs.verify-token.outputs.tool-ref }}
 
       - name: Build artifacts
         id: build-artifacts-action
