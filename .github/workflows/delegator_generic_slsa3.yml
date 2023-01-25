@@ -26,6 +26,8 @@ env:
   SLSA_ARTIFACTS_FILE: artifacts-layout.json
   SLSA_PREDICATE_FILE: predicate.json
 
+#TODO: use external Action calls everywhere?
+
 on:
   workflow_call:
     secrets:
@@ -233,7 +235,9 @@ jobs:
           repository: "${{ needs.detect-env.outputs.repository }}"
           ref: "${{ needs.detect-env.outputs.ref }}"
           path: __BUILDER_CHECKOUT_DIR__
-
+      - name: debug
+        run: |
+          tree
       - name: Download the artifact layout file
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
         with:
