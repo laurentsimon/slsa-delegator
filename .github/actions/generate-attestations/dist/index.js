@@ -137,14 +137,14 @@ function run() {
         // SLSA subjects layout file.
         const slsaOutputs = core.getInput("slsa-outputs-file");
         const safeSlsaOutputs = (0, utils_1.resolvePathInput)(slsaOutputs, wd);
-        core.debug(`Using SLSA output file at ${safeSlsaOutputs}!`);
+        core.info(`Using SLSA output file at ${safeSlsaOutputs}!`);
         // Predicate.
         const predicateFile = core.getInput("predicate-file");
         const safePredicateFile = (0, utils_1.resolvePathInput)(predicateFile, wd);
-        core.debug(`Inputs: Predicate file ${safePredicateFile}!`);
+        core.info(`Inputs: Predicate file ${safePredicateFile}!`);
         // Predicate type
         const predicateType = core.getInput("predicate-type");
-        core.debug(`Inputs: Predicate type ${predicateType}!`);
+        core.info(`Inputs: Predicate type ${predicateType}!`);
         // Attach subjects and generate attestation files
         const outputFolder = core.getInput("output-folder");
         const attestations = (0, attestation_1.writeAttestations)(safeSlsaOutputs, predicateType, safePredicateFile);

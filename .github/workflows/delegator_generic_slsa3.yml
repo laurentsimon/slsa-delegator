@@ -209,9 +209,14 @@ jobs:
           path: ${{ env.SLSA_PREDICATE_FILE }}
           sha256: ${{ needs.verify-token.outputs.predicate-sha256 }}
 
+      - name: debug
+        run: |
+          echo "predicate file: $(cat ${{ env.SLSA_PREDICATE_FILE }})" 
+          echo "artifact file: $(cat ${{ env.SLSA_ARTIFACTS_FILE }})"
+
       - name: Generate attestations
         id: attestations
-        uses: slsa-framework/slsa-github-generator/.github/actions/generate-attestations@main
+        uses: laurentsimon/slsa-delegator/.github/actions/generate-attestations@main
         with:
           slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
           predicate-type: "https://slsa.dev/provenance/v1.0?draft"
