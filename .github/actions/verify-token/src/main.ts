@@ -12,49 +12,54 @@ limitations under the License.
 */
 
 import * as core from "@actions/core";
+import * as github from "@actions/github";
 import * as sigstore from "sigstore";
 import * as process from "process";
 import * as fs from "fs";
 import * as child_process from "child_process";
-
-interface githubObj {
-  event_name: string;
-  run_attempt: string;
-  run_id: string;
-  run_number: string;
-  workflow: string;
-  sha: string;
-  repository: string;
-  repository_owner: string;
-  // TODO(#1411): Record if these become available.
-  // repository_id: string;
-  // repository_owner_id: string;
-  ref: string;
-  ref_type: string;
-  actor: string;
-}
+import { githubObj, rawTokenInterface, createPredicate } from "./predicate";
+import { getEnv, resolvePathInput } from "./utils";
 
 async function run(): Promise<void> {
   try {
-    /* Test locally:
+    /* Test locally. Requires a GitHub token:
         $ env INPUT_SLSA-WORKFLOW-RECIPIENT="delegator_generic_slsa3.yml" \
-        INPUT_SLSA-UNVERIFIED-TOKEN="$(cat slsa-token)" \
+        INPUT_SLSA-UNVERIFIED-TOKEN="$(cat testdata/slsa-token)" \
+        INPUT_TOKEN="$(gh auth token)" \
+        INPUT_OUTPUT-PREDICATE="predicate.json" \
         GITHUB_EVENT_NAME="workflow_dispatch" \
         GITHUB_RUN_ATTEMPT="1" \
-        GITHUB_RUN_ID="3789839403" \
-        GITHUB_RUN_NUMBER="198" \
+        GITHUB_RUN_ID="3790385865" \
+        GITHUB_RUN_NUMBER="200" \
         GITHUB_WORKFLOW="delegate release project" \
         GITHUB_SHA="8cbf4d422367d8499d5980a837cb9cc8e1e67001" \
         GITHUB_REPOSITORY="laurentsimon/slsa-delegate-project" \
+        GITHUB_REPOSITORY_ID="567955265" \
         GITHUB_REPOSITORY_OWNER="laurentsimon" \
+        GITHUB_REPOSITORY_OWNER_ID="64505099" \
+        GITHUB_ACTOR_ID="64505099" \
         GITHUB_REF="refs/heads/main" \
+        GITHUB_BASE_REF="" \
         GITHUB_REF_TYPE="branch" \
         GITHUB_ACTOR="laurentsimon" \
+        GITHUB_WORKSPACE="$(pwd)" \
         nodejs ./dist/index.js
     */
 
     const workflowRecipient = core.getInput("slsa-workflow-recipient");
     const unverifiedToken = core.getInput("slsa-unverified-token");
+
+    const outputPredicate = core.getInput("output-predicate");
+    if (!outputPredicate) {
+      // detect if output predicate is null or empty string.
+      throw new Error("output-predicate must be supplied");
+    }
+    const wd = getEnv("GITHUB_WORKSPACE");
+    const safeOutput = resolvePathInput(outputPredicate, wd);
+    // TODO(#1513): Use a common utility to harden file writes.
+    if (fs.existsSync(safeOutput)) {
+      throw new Error("output-predicate file already exists");
+    }
 
     // Log the inputs for troubleshooting.
     core.debug(`workflowRecipient: ${workflowRecipient}`);
@@ -68,7 +73,7 @@ async function run(): Promise<void> {
     const b64Token = parts[1];
     const bundle = JSON.parse(bundleStr);
 
-    // First, verify the signature, ie that it is signed by a certificate that
+    // First, verify the signature, i.e., that it is signed by a certificate that
     // chains up to Fulcio.
     await sigstore.sigstore.verify(bundle, Buffer.from(b64Token));
 
@@ -76,29 +81,7 @@ async function run(): Promise<void> {
     core.debug(`bundle: ${bundleStr}`);
     core.debug(`token: ${rawToken}`);
 
-    interface rawTokenInterface {
-      version: number;
-      context: string;
-      builder: {
-        private_repository: boolean;
-        runner_label: string;
-        audience: string;
-      };
-      github: githubObj;
-      tool: {
-        actions: {
-          build_artifacts: {
-            path: string;
-          };
-        };
-        // NOTE: reusable workflows only support inputs of type
-        // boolean, number, or string.
-        // https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-inputs-and-secrets-to-a-reusable-workflow.
-        inputs: Map<string, Object>;
-      };
-    }
-
-    const rawTokenStr = rawToken.toString()
+    const rawTokenStr = rawToken.toString();
     const rawTokenObj: rawTokenInterface = JSON.parse(rawTokenStr);
 
     // Verify the version.
@@ -114,10 +97,11 @@ async function run(): Promise<void> {
       workflowRecipient
     );
 
-    // Verify the runner label is not empty.
-    validateNonEmptyField(
+    // Verify the runner label.
+    validateFieldAnyOf(
       "builder.runner_label",
-      rawTokenObj.builder.runner_label
+      rawTokenObj.builder.runner_label,
+      ["ubuntu-latest"]
     );
 
     // Verify the GitHub event information.
@@ -134,12 +118,34 @@ async function run(): Promise<void> {
 
     // Extract certificate information.
     const [toolURI, toolRepository, toolRef] = parseCertificateIdentity(bundle);
-    
+
     core.debug(`slsa-verified-token: ${rawTokenStr}`);
+
+    // Now generate the SLSA predicate using the verified token and the GH context.
+    const token = core.getInput("token");
+    if (!token) {
+      throw new Error("token not provided");
+    }
+    const octokit = github.getOctokit(token);
+    const ownerRepo = getEnv("GITHUB_REPOSITORY");
+    const [owner, repo] = ownerRepo.split("/");
+
+    const { data: current_run } = await octokit.rest.actions.getWorkflowRun({
+      owner,
+      repo,
+      run_id: Number(process.env.GITHUB_RUN_ID),
+    });
+
+    const predicate = createPredicate(rawTokenObj, toolURI, current_run);
+    fs.writeFileSync(safeOutput, JSON.stringify(predicate), {
+      flag: "ax",
+      mode: 0o600,
+    });
+    core.debug(`predicate: ${JSON.stringify(predicate)}`);
+    core.debug(`Wrote predicate to ${safeOutput}`);
 
     core.setOutput("tool-repository", toolRepository);
     core.setOutput("tool-ref", toolRef);
-    core.setOutput("tool-uri", toolURI);
     core.setOutput("slsa-verified-token", rawTokenStr);
   } catch (error) {
     if (error instanceof Error) {
@@ -190,12 +196,12 @@ function parseCertificateIdentity(
     .toString();
   const index = result.indexOf("URI:");
   if (index === -1) {
-    throw new Error(`error: cannot find URI in SAN results`);
+    throw new Error("error: cannot find URI in subjectAltName");
   }
   const toolURI = result.slice(index + 4).replace("\n", "");
   core.debug(`tool-uri: ${toolURI}`);
 
-  // TODO: use the job_workflow_ref and job_workflow_sha when available.
+  // NOTE: we can use the job_workflow_ref and job_workflow_sha when they become available.
   const [toolRepository, toolRef] = extractIdentifyFromSAN(toolURI);
   core.debug(`tool-repository: ${toolRepository}`);
   core.debug(`tool-ref: ${toolRef}`);
@@ -204,16 +210,23 @@ function parseCertificateIdentity(
 }
 
 function extractIdentifyFromSAN(URI: string): [string, string] {
+  // NOTE: the URI looks like:
+  // https://github.com/laurentsimon/slsa-delegated-tool/.github/workflows/tool1_slsa3.yml@refs/heads/main.
+  // We want to extract:
+  // - the repository: laurentsimon/slsa-delegated-tool
+  // - the ref: refs/heads/main
   const parts = URI.split("@");
   if (parts.length !== 2) {
     throw new Error(`invalid URI (1): ${URI}`);
   }
   const ref = parts[1];
   const url = parts[0];
-  if (!url.startsWith("https://github.com/")) {
+  const gitHubURL = "https://github.com/";
+  if (!url.startsWith(gitHubURL)) {
     throw new Error(`not a GitHub URI: ${URI}`);
   }
-  const parts2 = parts[0].slice(19).split("/");
+  // NOTE: we omit the gitHubURL from the URL.
+  const parts2 = url.slice(gitHubURL.length).split("/");
   if (parts2.length <= 2) {
     throw new Error(`invalid URI (2): ${URI}`);
   }
@@ -257,6 +270,20 @@ function validateGitHubFields(gho: githubObj): void {
   // repository_id: process.env.GITHUB_REPOSITORY_ID,
   // repository_owner_id: process.env.GITHUB_REPOSITORY_OWNER_ID,
   // repository_actor_id: process.env.GITHUB_ACTOR_ID,
+}
+
+function validateFieldAnyOf<T>(name: string, actual: T, expected: T[]): void {
+  for (const value of expected) {
+    if (actual === value) {
+      // Found a match.
+      return;
+    }
+  }
+  throw new Error(
+    `mismatch ${name}: got '${actual}', expected one of '${expected.join(
+      ","
+    )}'.`
+  );
 }
 
 function validateField<T>(name: string, actual: T, expected: T): void {
