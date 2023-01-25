@@ -29,9 +29,15 @@ env:
 on:
   workflow_call:
     secrets:
-      secrets:
+      secret1:
         description: >
-          Optional secrets.
+          Optional secret.
+
+          This argument is passed, unchanged, to the builder's Action's `build-artifacts`.
+        required: false
+      secret2:
+        description: >
+          Optional secret.
 
           This argument is passed, unchanged, to the builder's Action's `build-artifacts`.
         required: false
@@ -164,8 +170,9 @@ jobs:
         uses: ./../__TOOL_ACTION_DIR__
         with:
           slsa-workflow-inputs: ${{ toJson(fromJson(needs.verify-token.outputs.slsa-verified-token).tool.inputs) }}
-          slsa-workflow-secrets: ${{ secrets.secrets }}
           slsa-layout-file: ../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}
+          slsa-workflow-secret1: ${{ secrets.secret1 }}
+          slsa-workflow-secret2: ${{ secrets.secret2 }}
 
       - name: debug
         env:
