@@ -101,6 +101,7 @@ jobs:
       - name: Checkout builder
         #TODO: add to reference pre-submit.
         uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
+        with:
           repository: "${{ needs.detect-env.outputs.repository }}"
           ref: "${{ needs.detect-env.outputs.ref }}"
           path: __BUILDER_CHECKOUT_DIR__
