@@ -210,7 +210,7 @@ jobs:
 
       - name: Upload artifact layout file
         id: upload
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
+        uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
         with:
           name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
           path: "${{ env.SLSA_ARTIFACTS_FILE }}"
