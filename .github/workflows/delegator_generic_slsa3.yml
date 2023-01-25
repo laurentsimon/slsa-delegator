@@ -159,6 +159,7 @@ jobs:
           repository: "${{ needs.detect-env.outputs.repository }}"
           ref: "${{ needs.detect-env.outputs.ref }}"
           path: __BUILDER_CHECKOUT_DIR__
+      - run: mv ./__BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
       - name: Checkout the tool
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-builder-checkout
@@ -166,25 +167,17 @@ jobs:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
           ref: ${{ needs.verify-token.outputs.tool-ref }}
           path: __TOOL_CHECKOUT_DIR__
+      - run: mv ./__TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
       - name: Checkout the project repository
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-project-checkout
-        with:
-          repository: ${{ needs.verify-token.outputs.tool-repository }}
-          ref: ${{ needs.verify-token.outputs.tool-ref }}
 
       # NOTE: We keep the GITHUB_WORKSPACE clean so that the git tree is *not* dirty.
-      - name: Setup directories
+      - name: Setyp Action directory.
         env:
           ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build-artifacts.path }}
         run: |
           set -euo pipefail
-
-          # The builder repository (SRW).
-          mv __BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
-
-          # The tool repository (TRW).
-          mv __TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
           # The action path to call (TRW).
           echo "ACTION_PATH=$ACTION_PATH"
