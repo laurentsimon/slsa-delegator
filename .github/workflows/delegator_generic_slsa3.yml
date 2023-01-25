@@ -208,10 +208,11 @@ jobs:
           set -euo pipefail
           mv "../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}" "${{ env.SLSA_ARTIFACTS_FILE }}"
 
+      # NOTE: the `secure-upload-artifact` Action assumes __BUILDER_CHECKOUT_DIR__ is under GITHUB_WORKSPACE.
       - run: mv ../__BUILDER_CHECKOUT_DIR__ ./__BUILDER_CHECKOUT_DIR__
       - name: Upload artifact layout file
         id: upload
-        uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
         with:
           name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
           path: "${{ env.SLSA_ARTIFACTS_FILE }}"
