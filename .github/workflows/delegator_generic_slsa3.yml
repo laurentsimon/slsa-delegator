@@ -130,13 +130,13 @@ jobs:
   # build-artifacts-ubuntu builds the projects.
   build-artifacts-ubuntu:
     needs: [privacy-check, rng, detect-env, verify-token]
-    if: fromJson(needs.verify-token.outputs.slsa-verified-token).builder.runner-label == 'ubuntu-latest'
+    if: fromJson(needs.verify-token.outputs.slsa-verified-token).buildDefinition.systemParameters.RUNNER_OS == 'Linux'
     outputs:
       outputs: ${{ toJson(steps.build-artifacts-action.outputs) }}
       artifacts-layout-sha256: ${{ steps.upload.outputs.sha256 }}
     runs-on: ubuntu-latest
     permissions:
-      # TODO: we should avoid these permissions for build systems that 'run' dependency code
+      # NOTE: we should avoid these permissions for build systems that 'run' dependency code
       # during 'compilation': e.g., npm's install scripts.
       contents: write # For release assets.
       packages: write # For publishing to GitHub packages.
@@ -144,7 +144,7 @@ jobs:
       - name: debug
         env:
           TOKEN: ${{ toJson(needs.verify-token.outputs.slsa-verified-token) }}
-          RUNNER: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).builder.runner-label }}
+          RUNNER: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).buildDefinition.systemParameters.RUNNER_OS }}
         run: |
           echo "$TOKEN: $TOKEN"
           echo "$RUNNER: $RUNNER"
