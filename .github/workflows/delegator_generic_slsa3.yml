@@ -162,18 +162,18 @@ jobs:
       - run: mv ./__BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
       - name: Checkout the tool repository
-        uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-builder-checkout
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
         with:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
           ref: ${{ needs.verify-token.outputs.tool-ref }}
           path: __TOOL_CHECKOUT_DIR__
+      - run: mv ./__TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
       - name: Setup Action directory
         env:
           ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build_artifacts.path }}
         run: |
           set -euo pipefail
-          mv ./__TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
 
           echo "ACTION_PATH=$ACTION_PATH"
           mkdir -p ../__TOOL_ACTION_DIR__
@@ -191,7 +191,7 @@ jobs:
           ls -l
 
       - name: Checkout the project repository
-        uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-project-checkout         
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-project-checkout@main
 
       # NOTE: Calls the Action defined in the slsa-token.
       - name: Build artifacts
@@ -208,14 +208,14 @@ jobs:
           set -euo pipefail
           mv "../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}" "${{ env.SLSA_ARTIFACTS_FILE }}"
 
-      - run: mv ../__BUILDER_CHECKOUT_DIR__ ./__BUILDER_CHECKOUT_DIR__
+      # TODO: use secure upload by updating the Action to `compute-sha256` to be called externally.
       - name: Upload artifact layout file
         id: upload
-        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
+        #uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
           path: "${{ env.SLSA_ARTIFACTS_FILE }}"
-      - run: mv ./__BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
