@@ -162,7 +162,7 @@ jobs:
       - run: mv ./__BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
       - name: Checkout the tool repository
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
+        uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-builder-checkout@main
         with:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
           ref: ${{ needs.verify-token.outputs.tool-ref }}
