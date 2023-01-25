@@ -140,7 +140,7 @@ jobs:
       artifacts-layout-sha256: ${{ steps.upload.outputs.sha256 }}
     runs-on: ubuntu-latest
     permissions:
-      # NOTE: we should avoid these permissions for build systems that 'run' dependency code
+      # NOTE: ideally we should avoid these permissions for build systems that 'run' dependency code
       # during 'compilation': e.g., npm's install scripts.
       contents: write # For release assets.
       packages: write # For publishing to GitHub packages.
@@ -208,8 +208,17 @@ jobs:
           set -euo pipefail
           mv "../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}" "${{ env.SLSA_ARTIFACTS_FILE }}"
 
-      # NOTE: the `secure-upload-artifact` Action assumes __BUILDER_CHECKOUT_DIR__ is under GITHUB_WORKSPACE.
-      - run: mv ../__BUILDER_CHECKOUT_DIR__ ./__BUILDER_CHECKOUT_DIR__
+      # NOTE: This serves 2 purposes:
+      # 1. Ensure the post checkout works
+      # 2. Ensure the __BUILDER_CHECKOUT_DIR__ is under GITHUB_WORKSPACE, as assumed by the `secure-upload-artifact` Action.
+      - name: Reset directories
+        run: |
+          set -euo pipefail
+
+          mv ../__TOOL_ACTION_DIR__/* ../__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/
+          mv ../__TOOL_CHECKOUT_DIR__ ./__TOOL_CHECKOUT_DIR__
+          mv ../__BUILDER_CHECKOUT_DIR__ ./__BUILDER_CHECKOUT_DIR__
+
       - name: Upload artifact layout file
         id: upload
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
