@@ -170,7 +170,7 @@ jobs:
 
       - name: Setup Action directory
         env:
-          ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build-artifacts.path }}
+          ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build_artifacts.path }}
         run: |
           set -euo pipefail
           mv ./__TOOL_CHECKOUT_DIR__ ../__TOOL_CHECKOUT_DIR__
