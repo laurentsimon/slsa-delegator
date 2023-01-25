@@ -221,7 +221,7 @@ jobs:
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
-    needs: [privacy-check, rng, verify-token, build-artifacts-ubuntu]
+    needs: [privacy-check, detect-env, rng, verify-token, build-artifacts-ubuntu]
     outputs:
       attestations-download-name: "slsa-attestations-${{ needs.rng.outputs.value }}"
     permissions:
