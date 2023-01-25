@@ -265,8 +265,8 @@ jobs:
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/generate-attestations
         with:
           # TODO: remove random value once secure-download is used.
-          #slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}
-          slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
+          slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}
+          #slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
           predicate-type: "https://slsa.dev/provenance/v1.0?draft"
           #predicate-file: ${{ env.SLSA_PREDICATE_FILE }}
           predicate-file: ${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}
