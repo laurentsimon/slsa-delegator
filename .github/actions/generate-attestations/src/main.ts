@@ -4,14 +4,22 @@ import path from "path";
 import { writeAttestations } from "./attestation";
 import { resolvePathInput } from "./utils";
 
+/*
+Test:
+  env INPUT_SLSA-LAYOUT-FILE=layout.json \
+  INPUT_PREDICATE-TYPE=https://slsa.dev/provenance/v1.0?draft \
+  INPUT-PREDICATE-FILE=predicate.json \
+  INPUT_OUTPUT-FOLDER=out-folder \
+  nodejs ./dist/index.js
+*/ 
 export function run(): void {
   try {
     const wd = process.env[`GITHUB_WORKSPACE`] || "";
 
     // SLSA subjects layout file.
-    const slsaOutputs = core.getInput("slsa-outputs-file");
-    const safeSlsaOutputs = resolvePathInput(slsaOutputs, wd);
-    core.info(`Using SLSA output file at ${safeSlsaOutputs}!`);
+    const slsaLayout = core.getInput("slsa-layout-file");
+    const safeSlsaLayout = resolvePathInput(slsaLayout, wd);
+    core.info(`Using SLSA layout file at ${safeSlsaLayout}!`);
 
     // Predicate.
     const predicateFile = core.getInput("predicate-file");
@@ -26,11 +34,11 @@ export function run(): void {
     const outputFolder = core.getInput("output-folder");
     core.info(`outputFolder: ${outputFolder}!`);
     const attestations = writeAttestations(
-      safeSlsaOutputs,
+      safeSlsaLayout,
       predicateType,
       safePredicateFile
     );
-
+    core.info(`outputFolder: ${outputFolder}!`);
     // Write attestations
     fs.mkdirSync(outputFolder, { recursive: true });
     for (const att in attestations) {

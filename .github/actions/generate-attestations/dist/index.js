@@ -58,12 +58,15 @@ function writeAttestations(layoutFile, predicateType, predicateFile) {
     if (layout.version !== 1) {
         throw Error(`SLSA outputs layout invalid version: ${layout.version}`);
     }
+    core.info(`layout.attestations: ${predicateFile}`);
     const count = Object.keys(layout.attestations).length;
     if (count > MAX_ATTESTATION_COUNT) {
         throw Error(`SLSA outputs layout had too many attestations: ${count}`);
     }
     // Read predicate
+    core.info(`predicateFile: ${predicateFile}`);
     const predicateBuffer = fs_1.default.readFileSync(predicateFile);
+    core.info(`predicateBuffer: ${predicateBuffer.toString()}`);
     const predicateJson = JSON.parse(predicateBuffer.toString());
     core.info(`predicateJson: ${predicateJson}`);
     // TODO(https://github.com/slsa-framework/slsa-github-generator/issues/1422): Add other predicate validations.
@@ -135,13 +138,21 @@ const fs_1 = __importDefault(__nccwpck_require__(147));
 const path_1 = __importDefault(__nccwpck_require__(17));
 const attestation_1 = __nccwpck_require__(420);
 const utils_1 = __nccwpck_require__(918);
+/*
+Test:
+  env INPUT_SLSA-LAYOUT-FILE=layout.json \
+  INPUT_PREDICATE-TYPE=https://slsa.dev/provenance/v1.0?draft \
+  INPUT-PREDICATE-FILE=predicate.json \
+  INPUT_OUTPUT-FOLDER=out-folder \
+  nodejs ./dist/index.js
+*/
 function run() {
     try {
         const wd = process.env[`GITHUB_WORKSPACE`] || "";
         // SLSA subjects layout file.
-        const slsaOutputs = core.getInput("slsa-outputs-file");
-        const safeSlsaOutputs = (0, utils_1.resolvePathInput)(slsaOutputs, wd);
-        core.info(`Using SLSA output file at ${safeSlsaOutputs}!`);
+        const slsaLayout = core.getInput("slsa-layout-file");
+        const safeSlsaLayout = (0, utils_1.resolvePathInput)(slsaLayout, wd);
+        core.info(`Using SLSA layout file at ${safeSlsaLayout}!`);
         // Predicate.
         const predicateFile = core.getInput("predicate-file");
         const safePredicateFile = (0, utils_1.resolvePathInput)(predicateFile, wd);
@@ -152,7 +163,8 @@ function run() {
         // Attach subjects and generate attestation files
         const outputFolder = core.getInput("output-folder");
         core.info(`outputFolder: ${outputFolder}!`);
-        const attestations = (0, attestation_1.writeAttestations)(safeSlsaOutputs, predicateType, safePredicateFile);
+        const attestations = (0, attestation_1.writeAttestations)(safeSlsaLayout, predicateType, safePredicateFile);
+        core.info(`outputFolder: ${outputFolder}!`);
         // Write attestations
         fs_1.default.mkdirSync(outputFolder, { recursive: true });
         for (const att in attestations) {

@@ -51,12 +51,15 @@ function writeAttestations(layoutFile, predicateType, predicateFile) {
     if (layout.version !== 1) {
         throw Error(`SLSA outputs layout invalid version: ${layout.version}`);
     }
+    core.info(`layout.attestations: ${predicateFile}`);
     const count = Object.keys(layout.attestations).length;
     if (count > MAX_ATTESTATION_COUNT) {
         throw Error(`SLSA outputs layout had too many attestations: ${count}`);
     }
     // Read predicate
+    core.info(`predicateFile: ${predicateFile}`);
     const predicateBuffer = fs_1.default.readFileSync(predicateFile);
+    core.info(`predicateBuffer: ${predicateBuffer.toString()}`);
     const predicateJson = JSON.parse(predicateBuffer.toString());
     core.info(`predicateJson: ${predicateJson}`);
     // TODO(https://github.com/slsa-framework/slsa-github-generator/issues/1422): Add other predicate validations.

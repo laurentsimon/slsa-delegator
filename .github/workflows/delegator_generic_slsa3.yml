@@ -218,7 +218,7 @@ jobs:
         id: attestations
         uses: laurentsimon/slsa-delegator/.github/actions/generate-attestations@main
         with:
-          slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
+          slsa-layout-file: ${{ env.SLSA_ARTIFACTS_FILE }}
           predicate-type: "https://slsa.dev/provenance/v1.0?draft"
           predicate-file: ${{ env.SLSA_PREDICATE_FILE }}
           output-folder: attestations

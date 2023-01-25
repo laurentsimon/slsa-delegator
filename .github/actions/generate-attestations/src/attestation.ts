@@ -33,6 +33,7 @@ export function writeAttestations(
     throw Error(`SLSA outputs layout invalid version: ${layout.version}`);
   }
 
+  core.info(`layout.attestations: ${predicateFile}`);
   const count = Object.keys(layout.attestations).length;
   if (count > MAX_ATTESTATION_COUNT) {
     throw Error(`SLSA outputs layout had too many attestations: ${count}`);
