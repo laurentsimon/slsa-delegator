@@ -208,25 +208,14 @@ jobs:
           set -euo pipefail
           mv "../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}" "${{ env.SLSA_ARTIFACTS_FILE }}"
 
-      # NOTE: This serves 2 purposes:
-      # 1. Ensure the post checkout works - only necessary for locally Actions.
-      # 2. Ensure the __BUILDER_CHECKOUT_DIR__ is under GITHUB_WORKSPACE, as assumed by the `secure-upload-artifact` Action.
-      - name: Reset directories
-        env:
-          ACTION_PATH: ${{ fromJson(needs.verify-token.outputs.slsa-verified-token).tool.actions.build_artifacts.path }}
-        run: |
-          set -euo pipefail
-
-          mv ../__TOOL_ACTION_DIR__/* ../__TOOL_CHECKOUT_DIR__/"$ACTION_PATH"/
-          mv ../__TOOL_CHECKOUT_DIR__ ./__TOOL_CHECKOUT_DIR__
-          mv ../__BUILDER_CHECKOUT_DIR__ ./__BUILDER_CHECKOUT_DIR__
-
+      - run: mv ../__BUILDER_CHECKOUT_DIR__ ./__BUILDER_CHECKOUT_DIR__
       - name: Upload artifact layout file
         id: upload
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
         with:
           name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
           path: "${{ env.SLSA_ARTIFACTS_FILE }}"
+      - run: mv ./__BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
   # generate-provenance generates and signs the provenance.
   generate-provenance:
