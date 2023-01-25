@@ -234,15 +234,23 @@ jobs:
       id-token: write # Needed to sign
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifact layout file
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
+      - name: Checkout builder repository
+        #TODO: add to reference pre-submit.
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
+        with:
+          repository: "${{ needs.detect-env.outputs.repository }}"
+          ref: "${{ needs.detect-env.outputs.ref }}"
+          path: __BUILDER_CHECKOUT_DIR__
+
+      - name: Download the artifact layout file
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
         with:
           name: "${{ env.SLSA_ARTIFACTS_FILE }}-${{ needs.rng.outputs.value }}"
           path: "${{ env.SLSA_ARTIFACTS_FILE }}"
           sha256: ${{ needs.build-artifacts-ubuntu.outputs.artifacts-layout-sha256 }}
 
       - name: Download the predicate file
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-download-artifact
         with:
           name: "${{ env.SLSA_PREDICATE_FILE }}-${{ needs.rng.outputs.value }}"
           path: ${{ env.SLSA_PREDICATE_FILE }}
@@ -250,7 +258,7 @@ jobs:
 
       - name: Generate attestations
         id: attestations
-        uses: slsa-framework/slsa-github-generator/.github/actions/generate-attestations@main
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/generate-attestations
         with:
           slsa-outputs-file: ${{ env.SLSA_ARTIFACTS_FILE }}
           predicate-type: "https://slsa.dev/provenance/v1.0?draft"
@@ -259,7 +267,7 @@ jobs:
 
       - name: Sign attestations
         id: sign
-        uses: slsa-framework/slsa-github-generator/.github/actions/sign-attestations@main
+        uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/sign-attestations
         with:
           attestations: attestations
           output-folder: outputs
