@@ -39,7 +39,9 @@ export function writeAttestations(
   }
 
   // Read predicate
+  core.info(`predicateFile: ${predicateFile}`);
   const predicateBuffer = fs.readFileSync(predicateFile);
+  core.info(`predicateBuffer: ${predicateBuffer.toString()}`);
   const predicateJson = JSON.parse(predicateBuffer.toString());
   core.info(`predicateJson: ${predicateJson}`);
 
