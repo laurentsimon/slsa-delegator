@@ -27,6 +27,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.writeAttestations = exports.createStatement = void 0;
+const core = __importStar(require("@actions/core"));
 const types = __importStar(require("./intoto"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -42,9 +43,11 @@ function createStatement(subjects, type, predicate) {
 }
 exports.createStatement = createStatement;
 function writeAttestations(layoutFile, predicateType, predicateFile) {
+    core.info("writeAttestations");
     // Read SLSA output layout file.
     const buffer = fs_1.default.readFileSync(layoutFile);
     const layout = JSON.parse(buffer.toString());
+    core.info(`layout: ${layout}`);
     if (layout.version !== 1) {
         throw Error(`SLSA outputs layout invalid version: ${layout.version}`);
     }
@@ -55,6 +58,7 @@ function writeAttestations(layoutFile, predicateType, predicateFile) {
     // Read predicate
     const predicateBuffer = fs_1.default.readFileSync(predicateFile);
     const predicateJson = JSON.parse(predicateBuffer.toString());
+    core.info(`predicateJson: ${predicateJson}`);
     // TODO(https://github.com/slsa-framework/slsa-github-generator/issues/1422): Add other predicate validations.
     // Iterate through SLSA output layout and create attestations
     const ret = {};

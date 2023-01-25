@@ -48,6 +48,7 @@ function run() {
         core.info(`Inputs: Predicate type ${predicateType}!`);
         // Attach subjects and generate attestation files
         const outputFolder = core.getInput("output-folder");
+        core.info(`outputFolder: ${outputFolder}!`);
         const attestations = (0, attestation_1.writeAttestations)(safeSlsaOutputs, predicateType, safePredicateFile);
         // Write attestations
         fs_1.default.mkdirSync(outputFolder, { recursive: true });

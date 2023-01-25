@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import * as types from "./intoto";
 import fs from "fs";
 import path from "path";
@@ -23,10 +24,11 @@ export function writeAttestations(
   predicateType: string,
   predicateFile: string
 ): Record<string, string> {
+  core.info("writeAttestations");
   // Read SLSA output layout file.
   const buffer = fs.readFileSync(layoutFile);
   const layout: types.Layout = JSON.parse(buffer.toString());
-
+  core.info(`layout: ${layout}`);
   if (layout.version !== 1) {
     throw Error(`SLSA outputs layout invalid version: ${layout.version}`);
   }
@@ -39,6 +41,7 @@ export function writeAttestations(
   // Read predicate
   const predicateBuffer = fs.readFileSync(predicateFile);
   const predicateJson = JSON.parse(predicateBuffer.toString());
+  core.info(`predicateJson: ${predicateJson}`);
 
   // TODO(https://github.com/slsa-framework/slsa-github-generator/issues/1422): Add other predicate validations.
 

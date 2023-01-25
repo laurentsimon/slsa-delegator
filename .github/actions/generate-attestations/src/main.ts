@@ -24,6 +24,7 @@ export function run(): void {
 
     // Attach subjects and generate attestation files
     const outputFolder = core.getInput("output-folder");
+    core.info(`outputFolder: ${outputFolder}!`);
     const attestations = writeAttestations(
       safeSlsaOutputs,
       predicateType,
