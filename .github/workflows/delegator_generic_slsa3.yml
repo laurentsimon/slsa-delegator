@@ -99,7 +99,7 @@ jobs:
 
       - name: Upload predicate
         id: upload
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
+        uses: laurentsimon/slsa-delegator/.github/actions/secure-upload-artifact@main
         with:
           name: "${{ needs.rng.outputs.value }}-${{ env.SLSA_PREDICATE_FILE }}"
           path: ${{ env.SLSA_PREDICATE_FILE }}
