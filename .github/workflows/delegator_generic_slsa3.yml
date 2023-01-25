@@ -161,8 +161,8 @@ jobs:
           path: __BUILDER_CHECKOUT_DIR__
       - run: mv ./__BUILDER_CHECKOUT_DIR__ ../__BUILDER_CHECKOUT_DIR__
 
-      - name: Checkout the tool
-        uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-builder-checkout
+      - name: Checkout the tool repository
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
         with:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
           ref: ${{ needs.verify-token.outputs.tool-ref }}
@@ -208,6 +208,7 @@ jobs:
           set -euo pipefail
           mv "../${{ env.SLSA_OUTPUTS_DIR }}/${{ env.SLSA_ARTIFACTS_FILE }}" "${{ env.SLSA_ARTIFACTS_FILE }}"
 
+      - run: mv ../__BUILDER_CHECKOUT_DIR__ ./__BUILDER_CHECKOUT_DIR__
       - name: Upload artifact layout file
         id: upload
         uses: ./../__BUILDER_CHECKOUT_DIR__/.github/actions/secure-upload-artifact
