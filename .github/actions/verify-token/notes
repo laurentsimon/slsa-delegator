@@ -1,0 +1,1 @@
+openssl x509 -pubkey -noout -in cert.crt > pubkey.pem

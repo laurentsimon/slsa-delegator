@@ -149,18 +149,14 @@ jobs:
           echo "$TOKEN: $TOKEN"
           echo "$RUNNER: $RUNNER"
 
-      # Checkout the builder and move it outside the workspace.
       - name: Checkout builder repository
-        #TODO: add to reference pre-submit.
         uses: slsa-framework/slsa-github-generator/.github/actions/secure-builder-checkout@main
         with:
           repository: "${{ needs.detect-env.outputs.repository }}"
           ref: "${{ needs.detect-env.outputs.ref }}"
           path: __BUILDER_CHECKOUT_DIR__
 
-      # Checkout the tool and move it outside the workspace.
       - name: Checkout the tool
-        #TODO: add to reference pre-submit.
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-builder-checkout
         with:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
@@ -168,8 +164,6 @@ jobs:
           path: __TOOL_CHECKOUT_DIR__
 
       - name: Checkout the project repository
-        #TODO: add to reference pre-submit.
-        #TODO: try nested checkouts.
         uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/secure-project-checkout
         with:
           repository: ${{ needs.verify-token.outputs.tool-repository }}
@@ -204,6 +198,7 @@ jobs:
           ls -l ../
           ls -l
 
+      # NOTE: Calls the Action defined in the slsa-token.
       - name: Build artifacts
         id: build-artifacts-action
         uses: ./../__TOOL_ACTION_DIR__

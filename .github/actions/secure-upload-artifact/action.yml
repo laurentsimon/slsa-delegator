@@ -1,0 +1,34 @@
+name: "Secure artifact upload"
+description: "Upload an artifact and outputs its SHA256"
+inputs:
+  name:
+    description: "Artifact name."
+    default: "artifact"
+    required: false
+  path:
+    description: "Artifact path. (Note: This is expected to be a file name in the working directory)."
+    required: true
+outputs:
+  sha256:
+    description: "SHA256 of the file."
+    value: "${{ steps.compute-digest.outputs.sha256 }}"
+
+runs:
+  using: "composite"
+  steps:
+    # Note: this assumes to top-level re-usable workflow
+    # has checkout'ed the builder repository using
+    # `.github/actions/secure-builder-checkout`.
+    - name: Compute binary hash
+      id: compute-digest
+      uses: ./__BUILDER_CHECKOUT_DIR__/.github/actions/compute-sha256
+      with:
+        path: "${{ inputs.path }}"
+
+    - name: Upload the artifact
+      uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+      with:
+        name: "${{ inputs.name }}"
+        path: "${{ inputs.path }}"
+        if-no-files-found: error
+        retention-days: 5

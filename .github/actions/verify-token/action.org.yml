@@ -1,0 +1,143 @@
+name: validate token
+
+description: 'validate token'
+
+inputs:
+  slsa-workflow-recipient:
+    description: 'the audience of the token'
+    type: string
+    required: true
+
+  slsa-token:
+    description: 'the raw token to validate'
+    type: string
+    required: true
+
+outputs:
+  slsa-validated-token:
+    description: "slsa validated token"
+    value: ${{ steps.validate.outputs.slsa-validated-token }}
+
+  tool-repository:
+    description: "the tool repository taken from the signing certificate"
+    value: ${{ steps.validate.outputs.tool-repository }}
+
+  tool-ref:
+    description: "the tool repository ref taken from the signing certificate"
+    value: ${{ steps.validate.outputs.tool-ref }}
+
+  tool-uri:
+    description: "the tool repository uri taken from the signing certificate"
+    value: ${{ steps.validate.outputs.tool-uri }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout the builder
+      # This pin must be added to the release freeze reference pre-submits.
+      uses: laurentsimon/slsa-delegator/.github/actions/secure-checkout@main
+      with:
+        # These are always the same as the pin above.
+        repository: "sigstore/sigstore-js"
+        ref: "v0.1.0"
+        path: __SIGSTORE_CHECKOUT_DIR__
+
+    # TODO: pin the action.
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Validate a token
+      id: validate
+      shell: bash
+      working-directory: __SIGSTORE_CHECKOUT_DIR__
+      env:
+        SLSA_AUDIENCE: ${{ inputs.slsa-workflow-recipient }}
+        SLSA_TOKEN: ${{ inputs.slsa-token }}
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+          # TODO: enable errors
+          echo "token: $SLSA_TOKEN"
+          # 1. Verify signature.
+          npm ci && npm run build
+          echo -n $SLSA_TOKEN| cut -d '.' -f1 | base64 -d > signature.txt
+          echo -n $SLSA_TOKEN| cut -d '.' -f2 > raw_token.txt
+          echo "raw:"
+          cat raw_token.txt
+          echo "signature:"
+          cat signature.txt
+
+          # TODO: verify the properties below from
+          # token and / or certificate.
+          # "workflow": "example-sha",
+          # "sha": "example-sha",
+          # "repository": "octo-org/octo-repo",
+          # "repository_owner": "octo-org",
+          # "actor_id": "12",
+          # "repository_visibility": private,
+          # "repository_id": "74",
+          # "repository_owner_id": "65",
+          # "run_id": "example-run-id",
+          # "run_number": "10",
+          # "run_attempt": "2",
+
+          # ******* WARNING ***********
+          # We MUST verify the identity from the cert and extract
+          # the repo name and the ref and add it to the token.
+          # Disabled temporarily to debug.
+          # ./bin/sigstore.js verify signature.txt raw_token.txt
+
+          # Extract the certificate PEM
+          cat signature.txt | jq -r '.verificationMaterial.x509CertificateChain.certificates[0].rawBytes' > cert.der.base64
+          cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName
+
+          subjectAltName=$(cat cert.der.base64 | base64 -d | openssl x509 -noout -ext subjectAltName)
+          subjectAltName=${subjectAltName##*URI:} # Strip text
+          echo "subject alt name from cert (tool URI): $subjectAltName"
+          echo "tool-uri=$subjectAltName" >> "$GITHUB_OUTPUT"
+          
+          # Add tool repository and ref to outputs by extracting the certificate SAN.
+          repository=$(echo $subjectAltName | grep -o -P '(?<=github.com/).*' | cut -d '/' -f1-2)
+          echo "repository from cert: $repository"
+          echo "tool-repository=$repository" >> "$GITHUB_OUTPUT"
+
+          # This is the fully qualified ref: refs/heads/main
+          ref=$(echo $subjectAltName | grep -o -P '(?<=github.com/).*' | cut -d '@' -f2)
+          echo "ref from cert: $ref"
+          echo "tool-ref=$ref" >> "$GITHUB_OUTPUT"
+
+          # Extract GitHub context from token
+          run_id=$(cat raw_token.txt | base64 -d | jq -r '.github.context.runId')
+
+          # Extract the `context`, which is a pre-defined string.
+          # `SLSA delegator framework`
+          context_string=$(cat raw_token.txt | base64 -d | jq -r '.context')
+          if [ "$context_string" != "SLSA delegator framework" ]; then
+            echo "Expected context string 'SLSA delegator framework', recieved '$context_string'"
+            exit 1
+          fi
+
+          # TODO: Validate the GitHub context, which contains run ID, repository names, etc.
+          # We need to unmarshal the output and perform a deep compare.
+          echo "github context:"
+          echo ${GITHUB_CONTEXT} | jq -r
+
+          # Extract audience from token
+          # Validate the audience matches the intended SLSA workflow receipient
+          audience=$(cat raw_token.txt | base64 -d | jq -r '.builder.audience')
+          if [ "$audience" != "$SLSA_AUDIENCE" ]; then
+            echo "Expected SLSA audience $SLSA_AUDIENCE, recieved $audience"
+            exit 1
+          fi
+
+          # Extract the version of the token.
+          version=$(cat raw_token.txt | base64 -d | jq -r '.version')
+          if [ "$version" != "1" ]; then
+            echo "Expected version '1', received '$version'"
+            exit 1
+          fi
+
+          # Output the verified token.
+          validated_token="$(cat raw_token.txt | base64 -d | jq -c .)"
+          echo "validated-token: $validated_token"
+          echo "slsa-validated-token=$validated_token" >> "$GITHUB_OUTPUT"
