@@ -1,4 +1,4 @@
-# Copyright 2022 SLSA Authors
+# Copyright 2023 SLSA Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ on:
         required: false
     inputs:
       slsa-token:
-        description: "The SLSA token identifying the request"
+        description: "The signed SLSA token identifying the request"
         required: true
         type: string
     outputs:
@@ -51,7 +51,11 @@ on:
         description: "The outputs from the build-artitacts Action, unchanged."
         value: ${{ jobs.build-artifacts-ubuntu.outputs.outputs }}
       attestations-download-name:
-        description: "Name of the artifact to download all the attestations."
+        description: >
+          Name of the artifact to download all the attestations.
+
+          When run on a `pull_request` trigger, attestations are not signed and have an ".intoto" extension.
+          When run on other trggers, attestations are signed and have an "intoto.sigstore" extension.
         value: ${{ jobs.generate-provenance.outputs.attestations-download-name }}
 
 jobs:
@@ -198,7 +202,7 @@ jobs:
   generate-provenance:
     needs: [privacy-check, rng, verify-token, build-artifacts-ubuntu]
     outputs:
-      attestations-download-name: "slsa-attestations-${{ needs.rng.outputs.value }}"
+      attestations-download-name: "${{ needs.rng.outputs.value }}-slsa-attestations"
     permissions:
       id-token: write # Needed to sign
     runs-on: ubuntu-latest
@@ -236,15 +240,15 @@ jobs:
         uses: slsa-framework/slsa-github-generator/.github/actions/sign-attestations@main
         with:
           attestations: attestations
-          output-folder: slsa-attestations-${{ needs.rng.outputs.value }}
+          output-folder: "${{ needs.rng.outputs.value }}-slsa-attestations"
 
       # NOTE: we don't need to perform a secure upload, since the attestations are signed.
       - name: Upload attestations
         id: upload
         uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3.1.1
         with:
-          name: slsa-attestations-${{ needs.rng.outputs.value }}
-          path: slsa-attestations-${{ needs.rng.outputs.value }}
+          name: "${{ needs.rng.outputs.value }}-slsa-attestations"
+          path: "${{ needs.rng.outputs.value }}-slsa-attestations"
 
 
 
