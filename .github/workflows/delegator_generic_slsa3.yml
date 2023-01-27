@@ -241,7 +241,8 @@ jobs:
         with:
           attestations: attestations
           output-folder: "${{ needs.rng.outputs.value }}-slsa-attestations"
-
+      - run: |
+          tree
       # NOTE: we don't need to perform a secure upload, since the attestations are signed.
       - name: Upload attestations
         id: upload
